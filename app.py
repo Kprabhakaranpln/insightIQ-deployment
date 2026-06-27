@@ -360,12 +360,9 @@ with st.sidebar:
                 loaded = load_dataset(f)
                 if loaded is not None: st.session_state["datasets"][f.name] = loaded
 
-        if st.session_state.get("datasets"):
-            active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
-            st.session_state["df"] = st.session_state["datasets"][active_name]
-            st.session_state["active_name"] = active_name
-
-            df_active = st.session_state["df"]
+        git add app.py
+git commit -m "fix: corrected session state overwriting data cleaning actions"
+git push
             st.markdown("---")
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
