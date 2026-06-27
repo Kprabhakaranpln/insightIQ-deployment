@@ -9,11 +9,10 @@ import plotly.express as px
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
 
 # ---------------------------------------------------------------------------
-# 2. Clean & Minimal Front Page Design (Only visual changes)
+# 2. Clean & Minimal Front Page Design
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-/* Keep all existing functionality styles */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
@@ -30,7 +29,7 @@ html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 /* Hide Streamlit's default header */
 header { visibility: hidden; }
 
-/* Sticky Top Navigation Bar - Cleaner */
+/* Sticky Top Navigation Bar */
 .sticky-header {
     position: fixed;
     top: 0;
@@ -77,7 +76,7 @@ section[data-testid="stSidebar"] {
     border-right: 1px solid var(--line);
 }
 
-/* Hero Section - Clean & Minimal */
+/* Hero Section */
 .hero-minimal {
     text-align: center;
     padding: 20px 0 8px 0;
@@ -101,7 +100,7 @@ section[data-testid="stSidebar"] {
     line-height: 1.5;
 }
 
-/* Feature Cards - Clean */
+/* Feature Cards */
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -153,7 +152,7 @@ section[data-testid="stSidebar"] {
     opacity: 0.6;
 }
 
-/* Empty state - Cleaner */
+/* Empty state */
 .empty-state {
     border: 1px dashed var(--line);
     border-radius: 8px;
@@ -177,7 +176,7 @@ section[data-testid="stSidebar"] {
     margin: 0;
 }
 
-/* Tabs - Cleaner */
+/* Tabs */
 .stTabs [data-baseweb="tab-list"] { 
     gap: 2px; 
     border-bottom: 1px solid var(--line); 
@@ -199,7 +198,7 @@ section[data-testid="stSidebar"] {
     background: transparent !important;
 }
 
-/* Buttons - Clean */
+/* Buttons */
 .stButton > button { 
     font-family: 'IBM Plex Sans', sans-serif;
     border: 1px solid var(--line);
@@ -216,7 +215,7 @@ section[data-testid="stSidebar"] {
     border-color: var(--ink);
 }
 
-/* Metrics - Clean */
+/* Metrics */
 [data-testid="metric-container"] {
     background: #FFFFFF;
     border: 1px solid var(--line);
@@ -258,7 +257,6 @@ footer, #MainMenu { visibility: hidden; }
 }
 </style>
 
-<!-- Clean Header -->
 <div class="sticky-header">
     <div style="display:flex; align-items:center;">
         <span class="emoji-icon">🧠</span>
@@ -266,12 +264,13 @@ footer, #MainMenu { visibility: hidden; }
         <span style="margin-left:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); font-weight:400;">data refinery</span>
     </div>
 </div>
-""", unsafe_allow_html=True)
+"""
+, unsafe_allow_html=True)
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
 # ---------------------------------------------------------------------------
-# 3. Clean Hero Section (Replacing the old one)
+# 3. Hero Section
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
@@ -280,7 +279,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Feature grid instead of pipeline diagram
 st.markdown("""
 <div class="feature-grid">
     <div class="feature-item">
@@ -301,7 +299,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Status strip - cleaner
 st.markdown(
     f"""
     <div style="text-align:center; margin: 12px 0 8px 0;">
@@ -315,7 +312,7 @@ st.markdown(
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# 4. File loading (UNCHANGED)
+# 4. File loading logic
 # ---------------------------------------------------------------------------
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
@@ -343,7 +340,7 @@ def load_dataset(uploaded_file):
         return None
 
 # ---------------------------------------------------------------------------
-# 5. Sidebar — Command Center (MINIMAL CHANGES - only visual cleanup)
+# 5. Sidebar — Command Center (WITH STATE MANAGEMENT FIX)
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚡ Command Center")
@@ -360,9 +357,20 @@ with st.sidebar:
                 loaded = load_dataset(f)
                 if loaded is not None: st.session_state["datasets"][f.name] = loaded
 
-        git add app.py
-git commit -m "fix: corrected session state overwriting data cleaning actions"
-git push
+        if st.session_state.get("datasets"):
+            active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
+            
+            # FIX: Only overwrite 'df' if the user selects a DIFFERENT file from the dropdown
+            if st.session_state.get("active_name") != active_name:
+                st.session_state["active_name"] = active_name
+                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
+            
+            # Fallback in case 'df' isn't set yet
+            elif "df" not in st.session_state:
+                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
+
+            df_active = st.session_state["df"]
+            
             st.markdown("---")
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
@@ -371,7 +379,7 @@ git push
         st.caption("No data loaded yet — upload a file above to begin.")
 
 # ---------------------------------------------------------------------------
-# 6. Main workspace (6 Tabs) - COMPLETELY UNCHANGED
+# 6. Main workspace
 # ---------------------------------------------------------------------------
 if "df" in st.session_state:
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -422,8 +430,8 @@ if "df" in st.session_state:
                             df_filled[col] = df_filled[col].fillna(0)
                 st.session_state["df"] = df_filled
                 st.rerun()
-        st.markdown("#### Preview")
-        st.dataframe(st.session_state["df"], use_container_width=True)
+        st.markdown("#### Data Preview")
+        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
     # --- Tab 2: Data Processing --------------------------------------
     with tab2:
@@ -442,8 +450,8 @@ if "df" in st.session_state:
             if st.button("Rename") and new_name:
                 st.session_state["df"] = df.rename(columns={col_to_rename: new_name})
                 st.rerun()
-        st.markdown("#### Preview")
-        st.dataframe(st.session_state["df"], use_container_width=True)
+        st.markdown("#### Data Preview")
+        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
     # --- Tab 3: Data Analysis ----------------------------------------
     with tab3:
@@ -461,25 +469,76 @@ if "df" in st.session_state:
         df = st.session_state["df"]
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
-        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans")
+        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
 
         chart_type = st.selectbox(
             "Choose Visualization Type", 
-            ["Dashboard View", "Scatter Plot", "Bar Chart", "Line Chart", "Area Chart", "Pie Chart", "Histogram", "Box Plot", "Correlation Heatmap"]
+            ["Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram", "Dashboard View"]
         )
         st.markdown("---")
 
         try:
-            if chart_type == "Dashboard View":
+            if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
+                # 1. Controls
+                c1, c2, c3 = st.columns(3)
+                with c1: x_axis = st.selectbox("X-Axis", all_cols)
+                with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
+                with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
+                
+                color_param = None if color_col == "None" else color_col
+                
+                # 2. Split screen: 75% for Chart, 25% for Side Data
+                chart_col, data_col = st.columns([3, 1])
+                
+                with chart_col:
+                    if chart_type == "Bar Chart": 
+                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
+                        fig.update_traces(textposition="outside", cliponaxis=False)
+                    elif chart_type == "Line Chart": 
+                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
+                    elif chart_type == "Scatter Plot": 
+                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
+                    
+                    fig.update_layout(**chart_theme)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with data_col:
+                    st.markdown("#### 📝 Data Summary")
+                    st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
+                    st.write("**Top 5 Highest Values:**")
+                    top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
+                    st.dataframe(top_data, hide_index=True, use_container_width=True)
+
+            elif chart_type == "Pie Chart":
+                c1, c2 = st.columns(2)
+                with c1: names = st.selectbox("Categories (Labels)", all_cols)
+                with c2: values = st.selectbox("Values", numeric_cols)
+                
+                chart_col, data_col = st.columns([3, 1])
+                
+                with chart_col:
+                    fig = px.pie(df, names=names, values=values)
+                    fig.update_traces(textinfo='label+percent+value', textposition='inside')
+                    fig.update_layout(**chart_theme)
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                with data_col:
+                    st.markdown("#### 📝 Data Summary")
+                    st.write("**Category Breakdown:**")
+                    pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
+                    st.dataframe(pie_data, hide_index=True, use_container_width=True)
+
+            elif chart_type == "Dashboard View":
                 st.markdown("#### 🚀 Quick Insights Dashboard")
                 if len(numeric_cols) >= 1 and len(all_cols) >= 2:
                     d_col1, d_col2 = st.columns(2)
                     with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", color_discrete_sequence=["#2563EB"])
+                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
                         fig1.update_layout(**chart_theme)
                         st.plotly_chart(fig1, use_container_width=True)
                         
                         fig2 = px.pie(df, names=all_cols[0], title=f"Breakdown of {all_cols[0]}")
+                        fig2.update_traces(textinfo='percent+label')
                         fig2.update_layout(**chart_theme)
                         st.plotly_chart(fig2, use_container_width=True)
                     with d_col2:
@@ -493,47 +552,21 @@ if "df" in st.session_state:
                             st.plotly_chart(fig4, use_container_width=True)
                 else:
                     st.warning("Not enough numeric/categorical data to generate a dashboard.")
-
-            elif chart_type in ["Bar Chart", "Line Chart", "Area Chart", "Scatter Plot"]:
-                c1, c2, c3 = st.columns(3)
-                with c1: x_axis = st.selectbox("X-Axis", all_cols)
-                with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
-                with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
-                
-                color_param = None if color_col == "None" else color_col
-                
-                if chart_type == "Bar Chart": fig = px.bar(df, x=x_axis, y=y_axis, color=color_param)
-                elif chart_type == "Line Chart": fig = px.line(df, x=x_axis, y=y_axis, color=color_param)
-                elif chart_type == "Area Chart": fig = px.area(df, x=x_axis, y=y_axis, color=color_param)
-                elif chart_type == "Scatter Plot": fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
-                
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
-
-            elif chart_type == "Pie Chart":
-                c1, c2 = st.columns(2)
-                with c1: names = st.selectbox("Categories (Labels)", all_cols)
-                with c2: values = st.selectbox("Values", numeric_cols)
-                fig = px.pie(df, names=names, values=values)
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
-
-            elif chart_type in ["Histogram", "Box Plot"]:
+                    
+            elif chart_type == "Histogram":
                 target_col = st.selectbox("Select Column to Analyze", numeric_cols)
-                if chart_type == "Histogram": fig = px.histogram(df, x=target_col, color_discrete_sequence=["#2563EB"])
-                else: fig = px.box(df, y=target_col, color_discrete_sequence=["#7C3AED"])
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
-
-            elif chart_type == "Correlation Heatmap":
-                if len(numeric_cols) >= 2:
-                    corr = df[numeric_cols].corr()
-                    fig = px.imshow(corr, text_auto=".2f", color_continuous_scale=["#E2E8F0", "#2563EB", "#0F172A"])
+                chart_col, data_col = st.columns([3, 1])
+                
+                with chart_col:
+                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
                     fig.update_layout(**chart_theme)
                     st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.warning("You need at least two numeric columns to generate a correlation heatmap.")
-                    
+                with data_col:
+                    st.markdown("#### 📝 Statistics")
+                    st.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
+                    st.metric("Median", f"{df[target_col].median():.2f}")
+                    st.metric("Max Value", f"{df[target_col].max():.2f}")
+
         except Exception as e:
             st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
 
@@ -574,5 +607,5 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-# Footer - cleaner
+# Footer
 st.markdown('<p style="text-align:center;color:var(--slate);font-family:\'IBM Plex Mono\',monospace;font-size:11px;margin-top:32px;">INSIGHTIQ · data refinery</p>', unsafe_allow_html=True)
