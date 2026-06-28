@@ -6,7 +6,6 @@ import plotly.express as px
 # ---------------------------------------------------------------------------
 # 1. Page configuration & Styling
 # ---------------------------------------------------------------------------
-# UPDATED: Added initial_sidebar_state="collapsed"
 st.set_page_config(
     page_title="InsightIQ | Data Refinery", 
     page_icon="🧭", 
@@ -14,8 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed" 
 )
 
-# UPDATED CSS: Removed `header { visibility: hidden; }`
-# Added transparent header, hidden action elements, and left padding for the sticky header
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -184,6 +181,12 @@ def commit_action(new_df):
     st.session_state["df"] = new_df.copy()
 
 # ---------------------------------------------------------------------------
+# Initialize Routing State
+# ---------------------------------------------------------------------------
+if "view_custom_dashboard" not in st.session_state:
+    st.session_state["view_custom_dashboard"] = False
+
+# ---------------------------------------------------------------------------
 # 4. Sidebar — Command Center
 # ---------------------------------------------------------------------------
 with st.sidebar:
@@ -221,7 +224,7 @@ with st.sidebar:
         st.caption("No data loaded yet — upload a file above to begin.")
 
 # ---------------------------------------------------------------------------
-# 5. Main workspace & Tabs
+# 5. Main workspace & Routing
 # ---------------------------------------------------------------------------
 if "df" in st.session_state:
     
@@ -248,220 +251,316 @@ if "df" in st.session_state:
             
     st.markdown("---")
 
-    # --- TABS ---
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
-        "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
-    ])
-
-    # --- Tab 1: Data Cleaning ---
-    with tab1:
-        st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
-        st.markdown("### 🧹 Data Cleaning")
-        df = st.session_state["df"]
-
-        colA, colB = st.columns(2)
-        with colA:
-            st.markdown("**Missing values by column**")
-            missing = df.isna().sum()
-            missing = missing[missing > 0]
-            if missing.empty: st.success("No missing values detected.")
-            else: st.dataframe(missing.rename("missing count"), use_container_width=True)
-        with colB:
-            st.markdown("**Duplicate rows**")
-            st.metric("Duplicates found", int(df.duplicated().sum()))
-
-        st.markdown("#### Actions")
-        a1, a2, a3 = st.columns(3)
-        with a1:
-            if st.button("🗑️ Drop duplicate rows"):
-                commit_action(df.drop_duplicates())
-                st.rerun()
-        with a2:
-            if st.button("🚫 Drop rows with missing values"):
-                commit_action(df.dropna())
-                st.rerun()
-        with a3:
-            fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"])
-            if st.button("🩹 Fill missing values"):
-                df_filled = df.copy()
-                for col in df_filled.columns:
-                    if df_filled[col].isna().any():
-                        if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
-                            val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
-                            df_filled[col] = df_filled[col].fillna(val)
-                        elif fill_strategy == "mode":
-                            mode_vals = df_filled[col].mode()
-                            df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
-                        elif fill_strategy == "0":
-                            df_filled[col] = df_filled[col].fillna(0)
-                commit_action(df_filled)
-                st.rerun()
-        st.markdown("#### Data Preview")
-        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
-
-    # --- Tab 2: Data Processing ---
-    with tab2:
-        st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
-        st.markdown("### ⚙️ Data Processing")
-        df = st.session_state["df"]
-        t1, t2 = st.columns(2)
-        with t1:
-            cols_to_drop = st.multiselect("Drop columns", df.columns.tolist())
-            if st.button("Drop selected") and cols_to_drop:
-                commit_action(df.drop(columns=cols_to_drop))
-                st.rerun()
-        with t2:
-            col_to_rename = st.selectbox("Rename column", df.columns.tolist())
-            new_name = st.text_input("New name")
-            if st.button("Rename") and new_name:
-                commit_action(df.rename(columns={col_to_rename: new_name}))
-                st.rerun()
-        st.markdown("#### Data Preview")
-        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
-
-    # --- Tab 3: Data Analysis ---
-    with tab3:
-        st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
-        st.markdown("### 📊 Data Analysis")
-        df = st.session_state["df"]
-        st.markdown("#### Summary Statistics")
-        st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
-
-    # --- Tab 4: Data Visualize ---
-    with tab4:
-        st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
-        st.markdown("### 📈 Data Visualize")
+    # ==========================================
+    # ROUTING LOGIC
+    # ==========================================
+    if st.session_state.get("view_custom_dashboard", False):
         
-        df = st.session_state["df"]
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        all_cols = df.columns.tolist()
-        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
-
-        chart_type = st.selectbox(
-            "Choose Visualization Type", 
-            ["Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram", "Dashboard View"]
-        )
+        # -------------------------------------------------------------------
+        # NEW PAGE: CUSTOM DASHBOARD
+        # -------------------------------------------------------------------
+        st.markdown("## 🎨 Custom Insights Dashboard")
+        
+        if st.button("⬅️ Return to Data Refinery", type="secondary"):
+            st.session_state["view_custom_dashboard"] = False
+            st.rerun()
+            
         st.markdown("---")
+        
+        if "pivot_data" in st.session_state:
+            p_data = st.session_state["pivot_data"]
+            pdf = p_data["df"]
+            
+            st.success(f"Dashboard powered by Pivot Table: **{p_data['agg'].upper()}** of **{p_data['value']}** by **{p_data['index']}**")
+            
+            dash_c1, dash_c2 = st.columns([2, 1])
+            
+            with dash_c1:
+                chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans")
+                fig = px.bar(
+                    pdf, 
+                    x=p_data["index"], 
+                    y=p_data["value"], 
+                    color=p_data["value"],
+                    color_continuous_scale="Viridis",
+                    title="Pivot Visualization"
+                )
+                fig.update_layout(**chart_theme)
+                st.plotly_chart(fig, use_container_width=True)
+                
+            with dash_c2:
+                st.markdown("#### 📋 Pivot Source Data")
+                st.dataframe(pdf, hide_index=True, use_container_width=True)
+                
+                csv = pdf.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "⬇️ Download Pivot CSV",
+                    csv,
+                    "pivot_extract.csv",
+                    "text/csv",
+                    use_container_width=True
+                )
+        else:
+            st.warning("No pivot data found. Please generate a pivot table first.")
 
-        try:
-            if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
-                c1, c2, c3 = st.columns(3)
-                with c1: x_axis = st.selectbox("X-Axis", all_cols)
-                with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
-                with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
-                
-                color_param = None if color_col == "None" else color_col
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    if chart_type == "Bar Chart": 
-                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
-                        fig.update_traces(textposition="outside", cliponaxis=False)
-                    elif chart_type == "Line Chart": 
-                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
-                    elif chart_type == "Scatter Plot": 
-                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
+    else:
+        # -------------------------------------------------------------------
+        # ORIGINAL PAGE: TABS WORKSPACE
+        # -------------------------------------------------------------------
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
+            "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
+        ])
+
+        # --- Tab 1: Data Cleaning ---
+        with tab1:
+            st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
+            st.markdown("### 🧹 Data Cleaning")
+            df = st.session_state["df"]
+
+            colA, colB = st.columns(2)
+            with colA:
+                st.markdown("**Missing values by column**")
+                missing = df.isna().sum()
+                missing = missing[missing > 0]
+                if missing.empty: st.success("No missing values detected.")
+                else: st.dataframe(missing.rename("missing count"), use_container_width=True)
+            with colB:
+                st.markdown("**Duplicate rows**")
+                st.metric("Duplicates found", int(df.duplicated().sum()))
+
+            st.markdown("#### Actions")
+            a1, a2, a3 = st.columns(3)
+            with a1:
+                if st.button("🗑️ Drop duplicate rows"):
+                    commit_action(df.drop_duplicates())
+                    st.rerun()
+            with a2:
+                if st.button("🚫 Drop rows with missing values"):
+                    commit_action(df.dropna())
+                    st.rerun()
+            with a3:
+                fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"])
+                if st.button("🩹 Fill missing values"):
+                    df_filled = df.copy()
+                    for col in df_filled.columns:
+                        if df_filled[col].isna().any():
+                            if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
+                                val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
+                                df_filled[col] = df_filled[col].fillna(val)
+                            elif fill_strategy == "mode":
+                                mode_vals = df_filled[col].mode()
+                                df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
+                            elif fill_strategy == "0":
+                                df_filled[col] = df_filled[col].fillna(0)
+                    commit_action(df_filled)
+                    st.rerun()
+            st.markdown("#### Data Preview")
+            st.dataframe(st.session_state["df"].head(100), use_container_width=True)
+
+        # --- Tab 2: Data Processing ---
+        with tab2:
+            st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
+            st.markdown("### ⚙️ Data Processing")
+            df = st.session_state["df"]
+            t1, t2 = st.columns(2)
+            with t1:
+                cols_to_drop = st.multiselect("Drop columns", df.columns.tolist())
+                if st.button("Drop selected") and cols_to_drop:
+                    commit_action(df.drop(columns=cols_to_drop))
+                    st.rerun()
+            with t2:
+                col_to_rename = st.selectbox("Rename column", df.columns.tolist())
+                new_name = st.text_input("New name")
+                if st.button("Rename") and new_name:
+                    commit_action(df.rename(columns={col_to_rename: new_name}))
+                    st.rerun()
+            st.markdown("#### Data Preview")
+            st.dataframe(st.session_state["df"].head(100), use_container_width=True)
+
+        # --- Tab 3: Data Analysis & Pivot ---
+        with tab3:
+            st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
+            st.markdown("### 📊 Data Analysis & Pivot")
+            df = st.session_state["df"]
+            
+            st.markdown("#### Summary Statistics")
+            st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
+
+            st.markdown("---")
+            st.markdown("#### 🔀 Pivot Table Generator")
+            
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            all_cols = df.columns.tolist()
+            
+            p_col1, p_col2, p_col3 = st.columns(3)
+            with p_col1:
+                pivot_index = st.selectbox("Rows (Index)", ["None"] + all_cols)
+            with p_col2:
+                pivot_values = st.selectbox("Values to Aggregate", ["None"] + numeric_cols)
+            with p_col3:
+                pivot_agg = st.selectbox("Aggregation Function", ["mean", "sum", "count", "max", "min"])
+
+            if pivot_index != "None" and pivot_values != "None":
+                try:
+                    pivot_df = pd.pivot_table(
+                        df, 
+                        index=pivot_index, 
+                        values=pivot_values, 
+                        aggfunc=pivot_agg
+                    ).reset_index()
                     
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
-                    st.write("**Top 5 Highest Values:**")
-                    top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
-                    st.dataframe(top_data, hide_index=True, use_container_width=True)
-
-            elif chart_type == "Pie Chart":
-                c1, c2 = st.columns(2)
-                with c1: names = st.selectbox("Categories (Labels)", all_cols)
-                with c2: values = st.selectbox("Values", numeric_cols)
-                
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    fig = px.pie(df, names=names, values=values)
-                    fig.update_traces(textinfo='label+percent+value', textposition='inside')
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.dataframe(pivot_df, use_container_width=True)
                     
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.write("**Category Breakdown:**")
-                    pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
-                    st.dataframe(pie_data, hide_index=True, use_container_width=True)
-
-            elif chart_type == "Dashboard View":
-                st.markdown("#### 🚀 Quick Insights Dashboard")
-                if len(numeric_cols) >= 1 and len(all_cols) >= 2:
-                    d_col1, d_col2 = st.columns(2)
-                    with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
-                        fig1.update_layout(**chart_theme)
-                        st.plotly_chart(fig1, use_container_width=True)
+                    st.session_state["pivot_data"] = {
+                        "df": pivot_df,
+                        "index": pivot_index,
+                        "value": pivot_values,
+                        "agg": pivot_agg
+                    }
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("✨ Send to Custom Dashboard", type="primary", use_container_width=True):
+                        st.session_state["view_custom_dashboard"] = True
+                        st.rerun()
                         
-                        fig2 = px.pie(df, names=all_cols[0], title=f"Breakdown of {all_cols[0]}")
-                        fig2.update_traces(textinfo='percent+label')
-                        fig2.update_layout(**chart_theme)
-                        st.plotly_chart(fig2, use_container_width=True)
-                    with d_col2:
-                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#7C3AED"])
-                        fig3.update_layout(**chart_theme)
-                        st.plotly_chart(fig3, use_container_width=True)
-                        
-                        if len(numeric_cols) >= 2:
-                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#0F172A"])
-                            fig4.update_layout(**chart_theme)
-                            st.plotly_chart(fig4, use_container_width=True)
-                else:
-                    st.warning("Not enough numeric/categorical data to generate a dashboard.")
+                except Exception as e:
+                    st.error(f"Could not generate pivot table: {e}")
+
+        # --- Tab 4: Data Visualize ---
+        with tab4:
+            st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
+            st.markdown("### 📈 Data Visualize")
+            
+            df = st.session_state["df"]
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            all_cols = df.columns.tolist()
+            chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
+
+            chart_type = st.selectbox(
+                "Choose Visualization Type", 
+                ["Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram", "Dashboard View"]
+            )
+            st.markdown("---")
+
+            try:
+                if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
+                    c1, c2, c3 = st.columns(3)
+                    with c1: x_axis = st.selectbox("X-Axis", all_cols)
+                    with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
+                    with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
                     
-            elif chart_type == "Histogram":
-                target_col = st.selectbox("Select Column to Analyze", numeric_cols)
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                with data_col:
-                    st.markdown("#### 📝 Statistics")
-                    st.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
-                    st.metric("Median", f"{df[target_col].median():.2f}")
-                    st.metric("Max Value", f"{df[target_col].max():.2f}")
+                    color_param = None if color_col == "None" else color_col
+                    chart_col, data_col = st.columns([3, 1])
+                    
+                    with chart_col:
+                        if chart_type == "Bar Chart": 
+                            fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
+                            fig.update_traces(textposition="outside", cliponaxis=False)
+                        elif chart_type == "Line Chart": 
+                            fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
+                        elif chart_type == "Scatter Plot": 
+                            fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
+                        
+                        fig.update_layout(**chart_theme)
+                        st.plotly_chart(fig, use_container_width=True)
+                    
+                    with data_col:
+                        st.markdown("#### 📝 Data Summary")
+                        st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
+                        st.write("**Top 5 Highest Values:**")
+                        top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
+                        st.dataframe(top_data, hide_index=True, use_container_width=True)
 
-        except Exception as e:
-            st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
+                elif chart_type == "Pie Chart":
+                    c1, c2 = st.columns(2)
+                    with c1: names = st.selectbox("Categories (Labels)", all_cols)
+                    with c2: values = st.selectbox("Values", numeric_cols)
+                    
+                    chart_col, data_col = st.columns([3, 1])
+                    
+                    with chart_col:
+                        fig = px.pie(df, names=names, values=values)
+                        fig.update_traces(textinfo='label+percent+value', textposition='inside')
+                        fig.update_layout(**chart_theme)
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                    with data_col:
+                        st.markdown("#### 📝 Data Summary")
+                        st.write("**Category Breakdown:**")
+                        pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
+                        st.dataframe(pie_data, hide_index=True, use_container_width=True)
 
-    # --- Tab 5: Interpretation ---
-    with tab5:
-        st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
-        st.markdown("### 💡 Interpretation")
-        if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
-        st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
+                elif chart_type == "Dashboard View":
+                    st.markdown("#### 🚀 Quick Insights Dashboard")
+                    if len(numeric_cols) >= 1 and len(all_cols) >= 2:
+                        d_col1, d_col2 = st.columns(2)
+                        with d_col1:
+                            fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
+                            fig1.update_layout(**chart_theme)
+                            st.plotly_chart(fig1, use_container_width=True)
+                            
+                            fig2 = px.pie(df, names=all_cols[0], title=f"Breakdown of {all_cols[0]}")
+                            fig2.update_traces(textinfo='percent+label')
+                            fig2.update_layout(**chart_theme)
+                            st.plotly_chart(fig2, use_container_width=True)
+                        with d_col2:
+                            fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#7C3AED"])
+                            fig3.update_layout(**chart_theme)
+                            st.plotly_chart(fig3, use_container_width=True)
+                            
+                            if len(numeric_cols) >= 2:
+                                fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#0F172A"])
+                                fig4.update_layout(**chart_theme)
+                                st.plotly_chart(fig4, use_container_width=True)
+                    else:
+                        st.warning("Not enough numeric/categorical data to generate a dashboard.")
+                        
+                elif chart_type == "Histogram":
+                    target_col = st.selectbox("Select Column to Analyze", numeric_cols)
+                    chart_col, data_col = st.columns([3, 1])
+                    
+                    with chart_col:
+                        fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
+                        fig.update_layout(**chart_theme)
+                        st.plotly_chart(fig, use_container_width=True)
+                    with data_col:
+                        st.markdown("#### 📝 Statistics")
+                        st.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
+                        st.metric("Median", f"{df[target_col].median():.2f}")
+                        st.metric("Max Value", f"{df[target_col].max():.2f}")
 
-    # --- Tab 6: Decision Making ---
-    with tab6:
-        st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
-        st.markdown("### 🎯 Decision Making")
-        df = st.session_state["df"]
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Final Total Rows", f"{df.shape[0]:,}")
-        m2.metric("Final Total Columns", df.shape[1])
-        m3.metric("Remaining Missing Data", f"{(df.isna().sum().sum() / df.size * 100) if df.size else 0:.1f}%")
+            except Exception as e:
+                st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
 
-        st.markdown("#### Final Export")
-        e1, e2, e3 = st.columns(3)
-        with e1:
-            st.download_button("⬇️ Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_export.csv", mime="text/csv", use_container_width=True)
-        with e2:
-            buffer = io.BytesIO()
-            df.to_excel(buffer, index=False, engine="openpyxl")
-            st.download_button("⬇️ Download Excel", buffer.getvalue(), file_name="insightiq_export.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with e3:
-            final_notes = st.session_state.get("analyst_notes", "No notes recorded.")
-            st.download_button("⬇️ Download Notes", final_notes.encode("utf-8"), file_name="analyst_notes.txt", mime="text/plain", use_container_width=True)
+        # --- Tab 5: Interpretation ---
+        with tab5:
+            st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
+            st.markdown("### 💡 Interpretation")
+            if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
+            st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
+
+        # --- Tab 6: Decision Making ---
+        with tab6:
+            st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
+            st.markdown("### 🎯 Decision Making")
+            df = st.session_state["df"]
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Final Total Rows", f"{df.shape[0]:,}")
+            m2.metric("Final Total Columns", df.shape[1])
+            m3.metric("Remaining Missing Data", f"{(df.isna().sum().sum() / df.size * 100) if df.size else 0:.1f}%")
+
+            st.markdown("#### Final Export")
+            e1, e2, e3 = st.columns(3)
+            with e1:
+                st.download_button("⬇️ Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_export.csv", mime="text/csv", use_container_width=True)
+            with e2:
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                st.download_button("⬇️ Download Excel", buffer.getvalue(), file_name="insightiq_export.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+            with e3:
+                final_notes = st.session_state.get("analyst_notes", "No notes recorded.")
+                st.download_button("⬇️ Download Notes", final_notes.encode("utf-8"), file_name="analyst_notes.txt", mime="text/plain", use_container_width=True)
 
 else:
     st.markdown("""
