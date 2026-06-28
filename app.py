@@ -312,7 +312,7 @@ st.markdown(
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# 4. File loading logic
+# 4. Core Logic Functions
 # ---------------------------------------------------------------------------
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
@@ -339,8 +339,19 @@ def load_dataset(uploaded_file):
         st.error(f"Couldn't read '{uploaded_file.name}': {e}")
         return None
 
+def commit_action(new_df):
+    """Saves a new dataframe state into the history timeline for Undo/Redo."""
+    current_idx = st.session_state["history_index"]
+    # If the user undid something and then made a new change, erase the alternate future timeline
+    st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
+    
+    # Add the new change to the timeline
+    st.session_state["df_history"].append(new_df.copy())
+    st.session_state["history_index"] += 1
+    st.session_state["df"] = new_df.copy()
+
 # ---------------------------------------------------------------------------
-# 5. Sidebar — Command Center (WITH STATE MANAGEMENT FIX)
+# 5. Sidebar — Command Center (Now with Time Travel)
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚡ Command Center")
@@ -360,14 +371,13 @@ with st.sidebar:
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
             
-            # FIX: Only overwrite 'df' if the user selects a DIFFERENT file from the dropdown
-            if st.session_state.get("active_name") != active_name:
+            # If a new dataset is selected (or it's the first load), initialize the history timeline
+            if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
-                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
-            
-            # Fallback in case 'df' isn't set yet
-            elif "df" not in st.session_state:
-                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
+                initial_df = st.session_state["datasets"][active_name].copy()
+                st.session_state["df_history"] = [initial_df]
+                st.session_state["history_index"] = 0
+                st.session_state["df"] = initial_df.copy()
 
             df_active = st.session_state["df"]
             
@@ -375,6 +385,24 @@ with st.sidebar:
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
             c2.metric("Columns", df_active.shape[1])
+            
+            # --- UNDO / REDO BUTTONS ---
+            st.markdown("---")
+            st.markdown("**⏳ Data Timeline**")
+            u_col, r_col = st.columns(2)
+            
+            can_undo = st.session_state["history_index"] > 0
+            can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
+            
+            if u_col.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
+                st.session_state["history_index"] -= 1
+                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+                st.rerun()
+                
+            if r_col.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
+                st.session_state["history_index"] += 1
+                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+                st.rerun()
     else:
         st.caption("No data loaded yet — upload a file above to begin.")
 
@@ -408,11 +436,11 @@ if "df" in st.session_state:
         a1, a2, a3 = st.columns(3)
         with a1:
             if st.button("🗑️ Drop duplicate rows"):
-                st.session_state["df"] = df.drop_duplicates()
+                commit_action(df.drop_duplicates())
                 st.rerun()
         with a2:
             if st.button("🚫 Drop rows with missing values"):
-                st.session_state["df"] = df.dropna()
+                commit_action(df.dropna())
                 st.rerun()
         with a3:
             fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"])
@@ -428,7 +456,7 @@ if "df" in st.session_state:
                             df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
                         elif fill_strategy == "0":
                             df_filled[col] = df_filled[col].fillna(0)
-                st.session_state["df"] = df_filled
+                commit_action(df_filled)
                 st.rerun()
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
@@ -442,13 +470,13 @@ if "df" in st.session_state:
         with t1:
             cols_to_drop = st.multiselect("Drop columns", df.columns.tolist())
             if st.button("Drop selected") and cols_to_drop:
-                st.session_state["df"] = df.drop(columns=cols_to_drop)
+                commit_action(df.drop(columns=cols_to_drop))
                 st.rerun()
         with t2:
             col_to_rename = st.selectbox("Rename column", df.columns.tolist())
             new_name = st.text_input("New name")
             if st.button("Rename") and new_name:
-                st.session_state["df"] = df.rename(columns={col_to_rename: new_name})
+                commit_action(df.rename(columns={col_to_rename: new_name}))
                 st.rerun()
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
