@@ -2,318 +2,359 @@ import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
+import numpy as np
 
 # ---------------------------------------------------------------------------
 # 1. Page configuration
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
+st.set_page_config(page_title="InsightIQ | Executive Dashboard", page_icon="📊", layout="wide")
 
 # ---------------------------------------------------------------------------
-# 2. Clean & Minimal Front Page Design
+# 2. Enhanced UI Design with Dashboard Focus
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-    --paper: #F8FAFC;
-    --ink: #0F172A;
-    --teal: #2563EB;
-    --copper: #7C3AED;
-    --slate: #475569;
-    --line: #E2E8F0;
+    --bg-primary: #F8FAFC;
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --border-color: #E2E8F0;
+    --blue-500: #3B82F6;
+    --blue-600: #2563EB;
+    --indigo-500: #6366F1;
+    --purple-500: #8B5CF6;
+    --green-500: #22C55E;
+    --red-500: #EF4444;
+    --orange-500: #F59E0B;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
+* { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-/* Hide Streamlit's default header */
-header { visibility: hidden; }
+/* Hide Streamlit's default elements */
+header, #MainMenu, footer { visibility: hidden; }
+.stApp { background-color: var(--bg-primary); }
 
-/* Sticky Top Navigation Bar */
-.sticky-header {
+/* Custom Top Navigation */
+.dashboard-nav {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
+    right: 0;
+    z-index: 99999;
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 99999;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 32px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
-.sticky-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-brand h1 {
+    font-size: 24px;
+    font-weight: 800;
     letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--blue-600), var(--purple-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin: 0;
-    color: var(--ink);
 }
 
-.emoji-icon {
-    font-size: 28px;
-    margin-right: 10px;
+.nav-brand span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
 }
 
-.stApp {
-    background-color: var(--paper);
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-actions .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green-500);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 /* Push content down */
-.block-container { 
-    padding-top: 5rem !important;
-    max-width: 1100px !important;
+.block-container {
+    padding-top: 80px !important;
+    max-width: 1400px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
 }
 
-section[data-testid="stSidebar"] {
-    background-color: #FFFFFF;
-    border-right: 1px solid var(--line);
-}
-
-/* Hero Section */
-.hero-minimal {
-    text-align: center;
-    padding: 20px 0 8px 0;
-}
-
-.hero-minimal h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 42px;
-    color: var(--ink);
-    margin: 0 0 6px 0;
-    letter-spacing: -1px;
-}
-
-.hero-minimal .subtitle {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 16px;
-    color: var(--slate);
-    max-width: 500px;
-    margin: 0 auto;
-    line-height: 1.5;
-}
-
-/* Feature Cards */
-.feature-grid {
+/* KPI Cards Grid */
+.kpi-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    max-width: 800px;
-    margin: 16px auto 0 auto;
-    padding: 0 20px;
+    margin-bottom: 24px;
 }
 
-.feature-item {
-    background: #FFFFFF;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 16px 12px;
-    text-align: center;
-    transition: all 0.15s ease;
+.kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.feature-item:hover {
-    border-color: var(--teal);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+.kpi-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--blue-500);
+    transform: translateY(-2px);
 }
 
-.feature-item .icon {
-    font-size: 22px;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.feature-item .label {
-    font-family: 'IBM Plex Sans', sans-serif;
+.kpi-label {
     font-size: 13px;
     font-weight: 500;
-    color: var(--ink);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
 }
 
-.feature-item .desc {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    color: var(--slate);
-    margin: 0;
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
-/* Clean divider */
-.dash-divider {
-    border: none;
-    border-top: 1px solid var(--line);
-    margin: 16px 0 20px 0;
-    opacity: 0.6;
+.kpi-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    padding: 2px 10px;
+    border-radius: 999px;
 }
 
-/* Empty state */
-.empty-state {
-    border: 1px dashed var(--line);
-    border-radius: 8px;
-    padding: 48px 24px;
-    text-align: center;
-    background: #FFFFFF;
+.kpi-change.positive {
+    color: var(--green-500);
+    background: rgba(34, 197, 94, 0.1);
 }
 
-.empty-state h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--ink);
-    margin: 0 0 4px 0;
+.kpi-change.negative {
+    color: var(--red-500);
+    background: rgba(239, 68, 68, 0.1);
 }
 
-.empty-state p {
-    font-family: 'IBM Plex Sans', sans-serif;
-    color: var(--slate);
-    font-size: 14px;
-    margin: 0;
+.kpi-change.neutral {
+    color: var(--text-secondary);
+    background: var(--bg-primary);
 }
 
-/* Tabs */
-.stTabs [data-baseweb="tab-list"] { 
-    gap: 2px; 
-    border-bottom: 1px solid var(--line); 
+/* Filter Bar */
+.filter-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
     flex-wrap: wrap;
-    background: transparent;
-}
-.stTabs [data-baseweb="tab"] { 
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    color: var(--slate);
-    padding: 8px 16px;
-    border-radius: 6px 6px 0 0;
-}
-.stTabs [aria-selected="true"] { 
-    color: var(--ink) !important; 
-    border-bottom: 2px solid var(--teal) !important;
-    font-weight: 600;
-    background: transparent !important;
+    box-shadow: var(--shadow-sm);
 }
 
-/* Buttons */
-.stButton > button { 
-    font-family: 'IBM Plex Sans', sans-serif;
-    border: 1px solid var(--line);
-    background-color: #FFFFFF;
-    color: var(--ink);
-    border-radius: 6px;
-    font-weight: 500;
+.filter-bar .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-bar label {
     font-size: 13px;
-    transition: all 0.15s ease;
-}
-.stButton > button:hover { 
-    background-color: var(--ink);
-    color: #FFFFFF;
-    border-color: var(--ink);
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
 }
 
-/* Metrics */
-[data-testid="metric-container"] {
-    background: #FFFFFF;
-    border: 1px solid var(--line);
+.filter-bar select, .filter-bar input {
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 12px;
-    box-shadow: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-width: 120px;
 }
 
-footer, #MainMenu { visibility: hidden; }
-
-/* Status dot */
-.status-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #22C55E;
-    margin-right: 6px;
+.filter-bar select:focus, .filter-bar input:focus {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.status-text {
-    font-family: 'IBM Plex Mono', monospace;
+/* Chart Container */
+.chart-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.chart-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.chart-header .chart-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.chart-header .chart-actions button {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 12px;
     font-size: 12px;
-    color: var(--slate);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-/* Pill tags */
-.pill { 
-    display: inline-block; 
-    font-family: 'IBM Plex Mono', monospace; 
-    font-size: 10px; 
-    letter-spacing: 0.04em; 
-    padding: 2px 10px; 
-    margin: 2px 3px 2px 0; 
-    border: 1px solid var(--line); 
-    border-radius: 999px; 
-    color: var(--slate); 
-    background: #FFFFFF;
+.chart-header .chart-actions button:hover {
+    background: var(--blue-500);
+    color: white;
+    border-color: var(--blue-500);
 }
+
+/* Sidebar customization */
+section[data-testid="stSidebar"] {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    padding-top: 80px;
+}
+
+section[data-testid="stSidebar"] .sidebar-content {
+    padding: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-nav {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .filter-bar .filter-group {
+        flex-wrap: wrap;
+    }
+}
+
+/* Utility classes */
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mt-4 { margin-top: 16px; }
+.flex { display: flex; }
+.gap-2 { gap: 8px; }
+.gap-4 { gap: 16px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
 </style>
 
-<div class="sticky-header">
-    <div style="display:flex; align-items:center;">
-        <span class="emoji-icon">🧠</span>
-        <h1 class="sticky-title">InsightIQ</h1>
-        <span style="margin-left:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); font-weight:400;">data refinery</span>
+<!-- Navigation -->
+<div class="dashboard-nav">
+    <div class="nav-brand">
+        <h1>📊 InsightIQ</h1>
+        <span>Executive Dashboard</span>
+    </div>
+    <div class="nav-actions">
+        <div class="status">
+            <span class="status-dot"></span>
+            <span>Live</span>
+        </div>
+        <span style="font-size:13px;color:var(--text-muted);">|</span>
+        <span style="font-size:13px;color:var(--text-secondary);">
+            Updated: <span id="current-time"></span>
+        </span>
     </div>
 </div>
-"""
-, unsafe_allow_html=True)
 
+<script>
+    document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
+</script>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# 3. Supported formats and core functions
+# ---------------------------------------------------------------------------
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
-# ---------------------------------------------------------------------------
-# 3. Hero Section
-# ---------------------------------------------------------------------------
-st.markdown("""
-<div class="hero-minimal">
-    <h1>Clean, analyze, visualize</h1>
-    <p class="subtitle">Upload any dataset and go from raw to insights in minutes</p>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="feature-grid">
-    <div class="feature-item">
-        <span class="icon">📥</span>
-        <div class="label">Import</div>
-        <p class="desc">8 formats supported</p>
-    </div>
-    <div class="feature-item">
-        <span class="icon">🧹</span>
-        <div class="label">Clean</div>
-        <p class="desc">Remove noise & fix data</p>
-    </div>
-    <div class="feature-item">
-        <span class="icon">📊</span>
-        <div class="label">Visualize</div>
-        <p class="desc">Interactive charts & dashboards</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(
-    f"""
-    <div style="text-align:center; margin: 12px 0 8px 0;">
-        <span class="status-dot"></span>
-        <span class="status-text">Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
-
-# ---------------------------------------------------------------------------
-# 4. Core Logic Functions
-# ---------------------------------------------------------------------------
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
     uploaded_file.seek(0)
@@ -342,298 +383,462 @@ def load_dataset(uploaded_file):
 def commit_action(new_df):
     """Saves a new dataframe state into the history timeline for Undo/Redo."""
     current_idx = st.session_state["history_index"]
-    # If the user undid something and then made a new change, erase the alternate future timeline
     st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
-    
-    # Add the new change to the timeline
     st.session_state["df_history"].append(new_df.copy())
     st.session_state["history_index"] += 1
     st.session_state["df"] = new_df.copy()
 
+def calculate_kpi_metrics(df):
+    """Calculate key KPI metrics for the dashboard."""
+    metrics = {
+        "Total Records": len(df),
+        "Total Columns": len(df.columns),
+        "Missing Values": df.isna().sum().sum(),
+        "Duplicate Rows": df.duplicated().sum(),
+        "Completeness": (1 - df.isna().sum().sum() / (len(df) * len(df.columns))) * 100
+    }
+    
+    # Add numeric metrics if available
+    numeric_cols = df.select_dtypes(include=np.number).columns
+    if len(numeric_cols) > 0:
+        metrics["Total Value"] = df[numeric_cols[0]].sum()
+        metrics["Average"] = df[numeric_cols[0]].mean()
+        metrics["Max"] = df[numeric_cols[0]].max()
+        metrics["Min"] = df[numeric_cols[0]].min()
+    
+    return metrics
+
 # ---------------------------------------------------------------------------
-# 5. Sidebar — Command Center (Now with Time Travel)
+# 4. Sidebar - Data Management
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.header("⚡ Command Center")
-    st.markdown("**Supported formats**")
-    st.markdown("".join(f'<span class="pill">{fmt}</span>' for fmt in SUPPORTED_FORMATS), unsafe_allow_html=True)
-    st.write("")
-
-    uploaded_files = st.file_uploader("Upload your data assets", type=SUPPORTED_FORMATS, accept_multiple_files=True)
-
+    st.markdown("### 🗂️ Data Management")
+    
+    uploaded_files = st.file_uploader("Upload Data", type=SUPPORTED_FORMATS, accept_multiple_files=True)
+    
     if uploaded_files:
         if "datasets" not in st.session_state: st.session_state["datasets"] = {}
         for f in uploaded_files:
             if f.name not in st.session_state["datasets"]:
                 loaded = load_dataset(f)
-                if loaded is not None: st.session_state["datasets"][f.name] = loaded
+                if loaded is not None: 
+                    st.session_state["datasets"][f.name] = loaded
 
         if st.session_state.get("datasets"):
-            active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
+            active_name = st.selectbox("Active Dataset", list(st.session_state["datasets"].keys()))
             
-            # If a new dataset is selected (or it's the first load), initialize the history timeline
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
                 initial_df = st.session_state["datasets"][active_name].copy()
                 st.session_state["df_history"] = [initial_df]
                 st.session_state["history_index"] = 0
                 st.session_state["df"] = initial_df.copy()
-
-            df_active = st.session_state["df"]
+            
+            df = st.session_state["df"]
             
             st.markdown("---")
-            c1, c2 = st.columns(2)
-            c1.metric("Rows", f"{df_active.shape[0]:,}")
-            c2.metric("Columns", df_active.shape[1])
+            st.markdown("### 📈 Data Timeline")
             
-            # --- UNDO / REDO BUTTONS ---
-            st.markdown("---")
-            st.markdown("**⏳ Data Timeline**")
-            u_col, r_col = st.columns(2)
-            
+            col1, col2 = st.columns(2)
             can_undo = st.session_state["history_index"] > 0
             can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
             
-            if u_col.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
+            if col1.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
                 st.session_state["history_index"] -= 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
                 
-            if r_col.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
+            if col2.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
                 st.session_state["history_index"] += 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
+            
+            st.markdown("---")
+            st.markdown("### 🧹 Quick Actions")
+            
+            if st.button("🧹 Auto Clean Data", use_container_width=True):
+                df_cleaned = df.copy()
+                # Remove duplicates
+                df_cleaned = df_cleaned.drop_duplicates()
+                # Fill numeric missing with median, categorical with mode
+                for col in df_cleaned.columns:
+                    if df_cleaned[col].isna().any():
+                        if pd.api.types.is_numeric_dtype(df_cleaned[col]):
+                            df_cleaned[col] = df_cleaned[col].fillna(df_cleaned[col].median())
+                        else:
+                            mode_val = df_cleaned[col].mode()
+                            if not mode_val.empty:
+                                df_cleaned[col] = df_cleaned[col].fillna(mode_val.iloc[0])
+                commit_action(df_cleaned)
+                st.rerun()
     else:
-        st.caption("No data loaded yet — upload a file above to begin.")
+        st.info("📂 Upload a dataset to get started")
+        st.caption("Supported formats: " + ", ".join(SUPPORTED_FORMATS))
 
 # ---------------------------------------------------------------------------
-# 6. Main workspace
+# 5. Main Dashboard View
 # ---------------------------------------------------------------------------
 if "df" in st.session_state:
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
-        "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
-    ])
+    df = st.session_state["df"]
+    kpi = calculate_kpi_metrics(df)
+    numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+    categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    all_cols = df.columns.tolist()
+    
+    # ---------------------------------------------------------------------------
+    # 5a. KPI Cards (Executive Dashboard)
+    # ---------------------------------------------------------------------------
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">📊 Total Records</div>
+            <div class="kpi-value">{kpi['Total Records']:,}</div>
+            <div class="kpi-change neutral">Dataset Size</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">📋 Data Completeness</div>
+            <div class="kpi-value">{kpi['Completeness']:.1f}%</div>
+            <div class="kpi-change {'positive' if kpi['Completeness'] > 90 else 'negative'}">
+                {kpi['Missing Values']:,} missing values
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">🔍 Data Quality</div>
+            <div class="kpi-value">{kpi['Duplicate Rows']:,}</div>
+            <div class="kpi-change {'positive' if kpi['Duplicate Rows'] == 0 else 'negative'}">
+                duplicate rows
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">📁 Data Structure</div>
+            <div class="kpi-value">{kpi['Total Columns']}</div>
+            <div class="kpi-change neutral">columns available</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # --- Tab 1: Data Cleaning -----------------------------------------
-    with tab1:
-        st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
-        st.markdown("### 🧹 Data Cleaning")
-        df = st.session_state["df"]
+    # ---------------------------------------------------------------------------
+    # 5b. Filter Bar (Interactive Dashboard)
+    # ---------------------------------------------------------------------------
+    st.markdown("""
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>🔍 Filter:</label>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Create dynamic filters
+    filter_cols = st.columns([2, 2, 2, 1, 1])
+    
+    with filter_cols[0]:
+        # Date filter if date columns exist
+        date_cols = df.select_dtypes(include=['datetime64']).columns.tolist()
+        if date_cols:
+            date_filter = st.selectbox("Date Column", [None] + date_cols)
+            if date_filter:
+                min_date = df[date_filter].min()
+                max_date = df[date_filter].max()
+                date_range = st.date_input("Date Range", [min_date, max_date])
+    
+    with filter_cols[1]:
+        # Categorical filter
+        if categorical_cols:
+            cat_filter = st.selectbox("Category", [None] + categorical_cols)
+            if cat_filter:
+                unique_vals = df[cat_filter].unique().tolist()
+                selected_vals = st.multiselect("Values", unique_vals, default=unique_vals[:5] if len(unique_vals) > 5 else unique_vals)
+    
+    with filter_cols[2]:
+        # Numeric range filter
+        if numeric_cols:
+            num_filter = st.selectbox("Numeric Column", [None] + numeric_cols)
+            if num_filter:
+                min_val = float(df[num_filter].min())
+                max_val = float(df[num_filter].max())
+                range_vals = st.slider("Range", min_val, max_val, (min_val, max_val))
+    
+    with filter_cols[3]:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔄 Apply Filters", use_container_width=True):
+            st.rerun()
+    
+    with filter_cols[4]:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🧹 Clear All", use_container_width=True):
+            st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        colA, colB = st.columns(2)
-        with colA:
-            st.markdown("**Missing values by column**")
-            missing = df.isna().sum()
-            missing = missing[missing > 0]
-            if missing.empty: st.success("No missing values detected.")
-            else: st.dataframe(missing.rename("missing count"), use_container_width=True)
-        with colB:
-            st.markdown("**Duplicate rows**")
-            st.metric("Duplicates found", int(df.duplicated().sum()))
-
-        st.markdown("#### Actions")
-        a1, a2, a3 = st.columns(3)
-        with a1:
-            if st.button("🗑️ Drop duplicate rows"):
-                commit_action(df.drop_duplicates())
-                st.rerun()
-        with a2:
-            if st.button("🚫 Drop rows with missing values"):
-                commit_action(df.dropna())
-                st.rerun()
-        with a3:
-            fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"])
-            if st.button("🩹 Fill missing values"):
-                df_filled = df.copy()
-                for col in df_filled.columns:
-                    if df_filled[col].isna().any():
-                        if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
-                            val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
-                            df_filled[col] = df_filled[col].fillna(val)
-                        elif fill_strategy == "mode":
-                            mode_vals = df_filled[col].mode()
-                            df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
-                        elif fill_strategy == "0":
-                            df_filled[col] = df_filled[col].fillna(0)
-                commit_action(df_filled)
-                st.rerun()
-        st.markdown("#### Data Preview")
-        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
-
-    # --- Tab 2: Data Processing --------------------------------------
-    with tab2:
-        st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
-        st.markdown("### ⚙️ Data Processing")
-        df = st.session_state["df"]
-        t1, t2 = st.columns(2)
-        with t1:
-            cols_to_drop = st.multiselect("Drop columns", df.columns.tolist())
-            if st.button("Drop selected") and cols_to_drop:
-                commit_action(df.drop(columns=cols_to_drop))
-                st.rerun()
-        with t2:
-            col_to_rename = st.selectbox("Rename column", df.columns.tolist())
-            new_name = st.text_input("New name")
-            if st.button("Rename") and new_name:
-                commit_action(df.rename(columns={col_to_rename: new_name}))
-                st.rerun()
-        st.markdown("#### Data Preview")
-        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
-
-    # --- Tab 3: Data Analysis ----------------------------------------
-    with tab3:
-        st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
-        st.markdown("### 📊 Data Analysis")
-        df = st.session_state["df"]
-        st.markdown("#### Summary Statistics")
-        st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
-
-    # --- Tab 4: Data Visualize --------------
-    with tab4:
-        st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
-        st.markdown("### 📈 Data Visualize")
+    # ---------------------------------------------------------------------------
+    # 5c. Main Dashboard Charts (2-column layout)
+    # ---------------------------------------------------------------------------
+    st.markdown("### 📈 Analytics Overview")
+    
+    chart_col1, chart_col2 = st.columns(2)
+    
+    # Left chart - Distribution or Bar chart
+    with chart_col1:
+        st.markdown("""
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Data Distribution</h3>
+            </div>
+        """, unsafe_allow_html=True)
         
-        df = st.session_state["df"]
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        all_cols = df.columns.tolist()
-        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
-
-        chart_type = st.selectbox(
-            "Choose Visualization Type", 
-            ["Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram", "Dashboard View"]
-        )
-        st.markdown("---")
-
-        try:
-            if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
-                # 1. Controls
-                c1, c2, c3 = st.columns(3)
-                with c1: x_axis = st.selectbox("X-Axis", all_cols)
-                with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
-                with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
-                
-                color_param = None if color_col == "None" else color_col
-                
-                # 2. Split screen: 75% for Chart, 25% for Side Data
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    if chart_type == "Bar Chart": 
-                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
-                        fig.update_traces(textposition="outside", cliponaxis=False)
-                    elif chart_type == "Line Chart": 
-                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
-                    elif chart_type == "Scatter Plot": 
-                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
-                    
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
-                    st.write("**Top 5 Highest Values:**")
-                    top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
-                    st.dataframe(top_data, hide_index=True, use_container_width=True)
-
-            elif chart_type == "Pie Chart":
-                c1, c2 = st.columns(2)
-                with c1: names = st.selectbox("Categories (Labels)", all_cols)
-                with c2: values = st.selectbox("Values", numeric_cols)
-                
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    fig = px.pie(df, names=names, values=values)
-                    fig.update_traces(textinfo='label+percent+value', textposition='inside')
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                    
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.write("**Category Breakdown:**")
-                    pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
-                    st.dataframe(pie_data, hide_index=True, use_container_width=True)
-
-            elif chart_type == "Dashboard View":
-                st.markdown("#### 🚀 Quick Insights Dashboard")
-                if len(numeric_cols) >= 1 and len(all_cols) >= 2:
-                    d_col1, d_col2 = st.columns(2)
-                    with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
-                        fig1.update_layout(**chart_theme)
-                        st.plotly_chart(fig1, use_container_width=True)
-                        
-                        fig2 = px.pie(df, names=all_cols[0], title=f"Breakdown of {all_cols[0]}")
-                        fig2.update_traces(textinfo='percent+label')
-                        fig2.update_layout(**chart_theme)
-                        st.plotly_chart(fig2, use_container_width=True)
-                    with d_col2:
-                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#7C3AED"])
-                        fig3.update_layout(**chart_theme)
-                        st.plotly_chart(fig3, use_container_width=True)
-                        
-                        if len(numeric_cols) >= 2:
-                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#0F172A"])
-                            fig4.update_layout(**chart_theme)
-                            st.plotly_chart(fig4, use_container_width=True)
-                else:
-                    st.warning("Not enough numeric/categorical data to generate a dashboard.")
-                    
-            elif chart_type == "Histogram":
-                target_col = st.selectbox("Select Column to Analyze", numeric_cols)
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                with data_col:
-                    st.markdown("#### 📝 Statistics")
-                    st.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
-                    st.metric("Median", f"{df[target_col].median():.2f}")
-                    st.metric("Max Value", f"{df[target_col].max():.2f}")
-
-        except Exception as e:
-            st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
-
-    # --- Tab 5: Interpretation ---------------------------------------------
-    with tab5:
-        st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
-        st.markdown("### 💡 Interpretation")
-        if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
-        st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
-
-    # --- Tab 6: Decision Making ---------------------------------------------
-    with tab6:
-        st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
-        st.markdown("### 🎯 Decision Making")
-        df = st.session_state["df"]
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Final Total Rows", f"{df.shape[0]:,}")
-        m2.metric("Final Total Columns", df.shape[1])
-        m3.metric("Remaining Missing Data", f"{(df.isna().sum().sum() / df.size * 100) if df.size else 0:.1f}%")
-
-        st.markdown("#### Final Export")
-        e1, e2, e3 = st.columns(3)
-        with e1:
-            st.download_button("⬇️ Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_export.csv", mime="text/csv", use_container_width=True)
-        with e2:
+        if numeric_cols:
+            selected_num = st.selectbox("Select column", numeric_cols, key="dist_col")
+            fig = px.histogram(df, x=selected_num, 
+                               title=f"Distribution of {selected_num}",
+                               color_discrete_sequence=["#3B82F6"],
+                               marginal="box")
+            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', 
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(family="Inter"),
+                            height=400)
+            fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            st.plotly_chart(fig, use_container_width=True, key="dist_chart")
+        else:
+            st.info("No numeric columns available for distribution chart")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Right chart - Categorical breakdown
+    with chart_col2:
+        st.markdown("""
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Category Breakdown</h3>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if categorical_cols:
+            selected_cat = st.selectbox("Select category", categorical_cols, key="cat_col")
+            cat_counts = df[selected_cat].value_counts().reset_index()
+            cat_counts.columns = [selected_cat, 'count']
+            
+            fig = px.bar(cat_counts, x=selected_cat, y='count',
+                        title=f"Distribution of {selected_cat}",
+                        color_discrete_sequence=["#8B5CF6"],
+                        text_auto=True)
+            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(family="Inter"),
+                            height=400)
+            fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            st.plotly_chart(fig, use_container_width=True, key="cat_chart")
+        else:
+            st.info("No categorical columns available for breakdown chart")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ---------------------------------------------------------------------------
+    # 5d. Bottom Row - Correlation/Scatter and Data Table
+    # ---------------------------------------------------------------------------
+    if len(numeric_cols) >= 2:
+        st.markdown("### 🔬 Correlation Analysis")
+        
+        corr_cols = st.columns(2)
+        
+        with corr_cols[0]:
+            st.markdown("""
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Scatter Plot</h3>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            x_col = st.selectbox("X-Axis", numeric_cols, key="x_scatter")
+            y_col = st.selectbox("Y-Axis", numeric_cols, index=1 if len(numeric_cols) > 1 else 0, key="y_scatter")
+            
+            fig = px.scatter(df, x=x_col, y=y_col,
+                           title=f"{x_col} vs {y_col}",
+                           trendline="ols",
+                           color_discrete_sequence=["#6366F1"])
+            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(family="Inter"),
+                            height=350)
+            fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#F1F5F9')
+            st.plotly_chart(fig, use_container_width=True, key="scatter_chart")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with corr_cols[1]:
+            st.markdown("""
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Correlation Matrix</h3>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Calculate correlation matrix
+            corr_matrix = df[numeric_cols].corr()
+            
+            fig = go.Figure(data=go.Heatmap(
+                z=corr_matrix.values,
+                x=corr_matrix.columns,
+                y=corr_matrix.columns,
+                colorscale='Blues',
+                text=corr_matrix.values.round(2),
+                texttemplate='%{text}',
+                textfont={"size": 10},
+                hoverongaps=False
+            ))
+            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(family="Inter"),
+                            height=350,
+                            xaxis=dict(side="bottom"),
+                            yaxis=dict(autorange="reversed"))
+            st.plotly_chart(fig, use_container_width=True, key="corr_chart")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ---------------------------------------------------------------------------
+    # 5e. Data Preview with Export Options
+    # ---------------------------------------------------------------------------
+    st.markdown("### 📋 Data Preview")
+    
+    preview_tabs = st.tabs(["📊 Table View", "📈 Summary Stats", "📥 Export Data"])
+    
+    with preview_tabs[0]:
+        # Show data with pagination
+        rows_per_page = st.selectbox("Rows per page", [25, 50, 100, 200], index=1)
+        total_pages = max(1, (len(df) + rows_per_page - 1) // rows_per_page)
+        page = st.number_input("Page", min_value=1, max_value=total_pages, value=1)
+        
+        start_idx = (page - 1) * rows_per_page
+        end_idx = min(start_idx + rows_per_page, len(df))
+        
+        st.dataframe(df.iloc[start_idx:end_idx], use_container_width=True)
+        st.caption(f"Showing rows {start_idx+1} to {end_idx} of {len(df):,}")
+    
+    with preview_tabs[1]:
+        # Summary statistics
+        st.markdown("#### Numerical Columns")
+        if numeric_cols:
+            st.dataframe(df[numeric_cols].describe(), use_container_width=True)
+        else:
+            st.info("No numerical columns found")
+        
+        st.markdown("#### Categorical Columns")
+        if categorical_cols:
+            cat_stats = []
+            for col in categorical_cols[:5]:  # Limit to avoid performance issues
+                cat_stats.append({
+                    "Column": col,
+                    "Unique Values": df[col].nunique(),
+                    "Most Common": df[col].mode().iloc[0] if not df[col].mode().empty else "N/A",
+                    "Missing": df[col].isna().sum()
+                })
+            st.dataframe(pd.DataFrame(cat_stats), use_container_width=True)
+        else:
+            st.info("No categorical columns found")
+    
+    with preview_tabs[2]:
+        st.markdown("#### Export Options")
+        export_cols = st.columns(3)
+        
+        with export_cols[0]:
+            st.download_button(
+                "📥 Download CSV",
+                df.to_csv(index=False).encode('utf-8'),
+                file_name=f"insightiq_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        
+        with export_cols[1]:
             buffer = io.BytesIO()
             df.to_excel(buffer, index=False, engine="openpyxl")
-            st.download_button("⬇️ Download Excel", buffer.getvalue(), file_name="insightiq_export.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with e3:
-            final_notes = st.session_state.get("analyst_notes", "No notes recorded.")
-            st.download_button("⬇️ Download Notes", final_notes.encode("utf-8"), file_name="analyst_notes.txt", mime="text/plain", use_container_width=True)
+            st.download_button(
+                "📥 Download Excel",
+                buffer.getvalue(),
+                file_name=f"insightiq_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        
+        with export_cols[2]:
+            st.download_button(
+                "📥 Download Summary",
+                df.describe().to_csv().encode('utf-8'),
+                file_name=f"insightiq_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    
+    # ---------------------------------------------------------------------------
+    # 5f. Data Quality Report
+    # ---------------------------------------------------------------------------
+    with st.expander("📊 Data Quality Report", expanded=False):
+        quality_metrics = {
+            "Metric": ["Total Rows", "Total Columns", "Missing Values", "Duplicate Rows", 
+                      "Data Completeness", "Unique Values (avg)"],
+            "Value": [
+                f"{len(df):,}",
+                f"{len(df.columns)}",
+                f"{df.isna().sum().sum():,}",
+                f"{df.duplicated().sum():,}",
+                f"{(1 - df.isna().sum().sum() / (len(df) * len(df.columns))) * 100:.1f}%",
+                f"{df.nunique().mean():.1f}"
+            ]
+        }
+        st.dataframe(pd.DataFrame(quality_metrics), hide_index=True, use_container_width=True)
+        
+        # Column-by-column quality
+        st.markdown("#### Column Details")
+        col_quality = pd.DataFrame({
+            "Column": df.columns,
+            "Type": df.dtypes.astype(str),
+            "Missing": df.isna().sum(),
+            "Missing %": (df.isna().sum() / len(df) * 100).round(1),
+            "Unique": df.nunique(),
+            "Sample": df.iloc[0].values if len(df) > 0 else ["N/A"] * len(df.columns)
+        })
+        st.dataframe(col_quality, use_container_width=True)
 
 else:
+    # Empty state
     st.markdown("""
-    <div class="empty-state">
-        <h3>📂 No dataset loaded</h3>
-        <p>Upload a file from the Command Center in the sidebar to begin.</p>
+    <div style="text-align:center; padding: 80px 20px; background: white; border-radius: 16px; border: 2px dashed #E2E8F0; margin-top: 40px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">📊</div>
+        <h2 style="font-size: 28px; font-weight: 700; color: #0F172A; margin-bottom: 12px;">Executive Dashboard</h2>
+        <p style="font-size: 18px; color: #475569; max-width: 500px; margin: 0 auto 24px;">
+            Upload a dataset from the sidebar to unlock powerful analytics, 
+            interactive visualizations, and data-driven insights.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <span style="padding: 6px 16px; background: #F1F5F9; border-radius: 999px; font-size: 13px; color: #475569;">CSV</span>
+            <span style="padding: 6px 16px; background: #F1F5F9; border-radius: 999px; font-size: 13px; color: #475569;">Excel</span>
+            <span style="padding: 6px 16px; background: #F1F5F9; border-radius: 999px; font-size: 13px; color: #475569;">JSON</span>
+            <span style="padding: 6px 16px; background: #F1F5F9; border-radius: 999px; font-size: 13px; color: #475569;">Parquet</span>
+            <span style="padding: 6px 16px; background: #F1F5F9; border-radius: 999px; font-size: 13px; color: #475569;">+ More</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 # Footer
-st.markdown('<p style="text-align:center;color:var(--slate);font-family:\'IBM Plex Mono\',monospace;font-size:11px;margin-top:32px;">INSIGHTIQ · data refinery</p>', unsafe_allow_html=True)
+st.markdown("""
+<div style="text-align:center; padding: 24px 0 16px; border-top: 1px solid #E2E8F0; margin-top: 32px;">
+    <span style="font-size: 13px; color: #94A3B8; font-weight: 500;">
+        InsightIQ Executive Dashboard v2.0 · Built with Streamlit & Plotly
+    </span>
+</div>
+""", unsafe_allow_html=True)
