@@ -2,161 +2,13 @@ import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from ui.styles import apply_custom_css  # Pulling in your new clean design folder!
 
 # ---------------------------------------------------------------------------
-# 1. Page configuration & Material Styling
+# 1. Page configuration
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
-
-st.markdown("""
-<style>
-/* Import official Material Design font */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-
-:root {
-    /* Material 3 Color Palette */
-    --md-primary: #6750A4; 
-    --md-on-primary: #FFFFFF;
-    --md-background: #F3F4F6;
-    --md-surface: #FFFFFF;
-    --md-on-surface: #1C1B1F;
-    --md-on-surface-variant: #49454F;
-    --md-outline: #CAC4D0;
-    
-    /* Material Elevations (Shadows) */
-    --md-elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    --md-elevation-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-}
-
-html, body, [class*="css"] { 
-    font-family: 'Roboto', sans-serif !important; 
-    color: var(--md-on-surface);
-}
-header { visibility: hidden; }
-
-.stApp { background-color: var(--md-background); }
-.block-container { padding-top: 5rem !important; max-width: 1100px !important; }
-
-/* Material App Bar */
-.sticky-header {
-    position: fixed;
-    top: 0; left: 0; width: 100%;
-    background-color: var(--md-surface);
-    box-shadow: var(--md-elevation-1);
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    padding: 14px 24px;
-}
-.sticky-title {
-    font-weight: 500; 
-    font-size: 22px; 
-    margin: 0; 
-    letter-spacing: 0.15px;
-    color: var(--md-on-surface);
-}
-.emoji-icon { font-size: 24px; margin-right: 12px; }
-
-/* Sidebar styling */
-section[data-testid="stSidebar"] { 
-    background-color: var(--md-surface); 
-    border-right: 1px solid var(--md-outline); 
-}
-
-/* Hero Section */
-.hero-minimal { text-align: center; padding: 24px 0 16px 0; }
-.hero-minimal h1 { font-weight: 700; font-size: 40px; color: var(--md-primary); margin: 0 0 8px 0; letter-spacing: -0.5px; }
-.hero-minimal .subtitle { font-size: 16px; color: var(--md-on-surface-variant); max-width: 500px; margin: 0 auto; line-height: 1.5; }
-
-/* Material Cards for Features */
-.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 800px; margin: 24px auto 0 auto; padding: 0 20px; }
-.feature-item { 
-    background: var(--md-surface); 
-    border-radius: 12px; 
-    box-shadow: var(--md-elevation-1); 
-    padding: 20px 16px; 
-    text-align: center; 
-    transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-}
-.feature-item:hover { box-shadow: var(--md-elevation-2); }
-.feature-item .icon { font-size: 28px; display: block; margin-bottom: 8px; color: var(--md-primary); }
-.feature-item .label { font-size: 14px; font-weight: 500; color: var(--md-on-surface); letter-spacing: 0.1px; }
-.feature-item .desc { font-size: 13px; color: var(--md-on-surface-variant); margin: 4px 0 0 0; }
-
-.dash-divider { border: none; border-top: 1px solid var(--md-outline); margin: 24px 0; opacity: 0.5; }
-
-/* Empty State Card */
-.empty-state { 
-    border-radius: 12px; 
-    padding: 48px 24px; 
-    text-align: center; 
-    background: var(--md-surface);
-    box-shadow: var(--md-elevation-1);
-}
-.empty-state h3 { font-size: 20px; font-weight: 500; color: var(--md-on-surface); margin: 0 0 8px 0; }
-.empty-state p { color: var(--md-on-surface-variant); font-size: 15px; margin: 0; }
-
-/* Material Tabs */
-.stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid var(--md-outline); background: transparent; }
-.stTabs [data-baseweb="tab"] { 
-    font-weight: 500; 
-    font-size: 14px; 
-    color: var(--md-on-surface-variant); 
-    padding: 12px 16px; 
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.stTabs [aria-selected="true"] { 
-    color: var(--md-primary) !important; 
-    border-bottom: 3px solid var(--md-primary) !important; 
-    background: transparent !important; 
-}
-
-/* Material Buttons (Pill shaped M3) */
-.stButton > button { 
-    background-color: transparent; 
-    color: var(--md-primary); 
-    border: 1px solid var(--md-outline); 
-    border-radius: 100px; 
-    font-weight: 500; 
-    font-size: 14px; 
-    letter-spacing: 0.1px;
-    padding: 8px 24px;
-    transition: background-color 0.2s ease, border-color 0.2s ease; 
-}
-.stButton > button:hover { 
-    background-color: rgba(103, 80, 164, 0.08); 
-    border-color: var(--md-primary); 
-    color: var(--md-primary);
-}
-
-/* Material Metrics Cards */
-[data-testid="metric-container"] { 
-    background: var(--md-surface); 
-    border-radius: 12px; 
-    padding: 16px; 
-    box-shadow: var(--md-elevation-1);
-    border: none;
-}
-[data-testid="metric-container"] label {
-    color: var(--md-on-surface-variant) !important;
-    font-weight: 500;
-}
-
-footer, #MainMenu { visibility: hidden; }
-
-.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; margin-right: 8px; }
-.status-text { font-size: 13px; color: var(--md-on-surface-variant); font-weight: 500; }
-.pill { display: inline-block; font-size: 11px; letter-spacing: 0.5px; padding: 4px 12px; margin: 2px 4px 2px 0; border: 1px solid var(--md-outline); border-radius: 16px; color: var(--md-on-surface-variant); background: var(--md-surface); font-weight: 500; text-transform: uppercase; }
-</style>
-
-<div class="sticky-header">
-    <div style="display:flex; align-items:center;">
-        <span class="emoji-icon">📊</span>
-        <h1 class="sticky-title">InsightIQ <span style="font-size:14px; color:var(--md-on-surface-variant); font-weight:400; margin-left:8px;">Data Refinery</span></h1>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+apply_custom_css()
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
@@ -165,37 +17,41 @@ SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "a
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
-    <h1>Refine your data.</h1>
-    <p class="subtitle">Upload any dataset and go from raw numbers to actionable insights instantly.</p>
+    <h1>Clean, analyze, visualize</h1>
+    <p class="subtitle">Upload any dataset and go from raw to insights in minutes</p>
 </div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
 <div class="feature-grid">
     <div class="feature-item">
-        <span class="icon">upload_file</span>
+        <span class="icon">📥</span>
         <div class="label">Import</div>
         <p class="desc">8 formats supported</p>
     </div>
     <div class="feature-item">
-        <span class="icon">auto_fix_high</span>
+        <span class="icon">🧹</span>
         <div class="label">Clean</div>
         <p class="desc">Remove noise & fix data</p>
     </div>
     <div class="feature-item">
-        <span class="icon">query_stats</span>
+        <span class="icon">📊</span>
         <div class="label">Visualize</div>
-        <p class="desc">Interactive dashboards</p>
+        <p class="desc">Interactive charts & dashboards</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown(
     f"""
-    <div style="text-align:center; margin: 24px 0 8px 0;">
+    <div style="text-align:center; margin: 12px 0 8px 0;">
         <span class="status-dot"></span>
-        <span class="status-text">System Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
+        <span class="status-text">Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
@@ -227,6 +83,7 @@ def load_dataset(uploaded_file):
         return None
 
 def commit_action(new_df):
+    """Saves a new dataframe state into the history timeline for Undo/Redo."""
     current_idx = st.session_state["history_index"]
     st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
     st.session_state["df_history"].append(new_df.copy())
@@ -234,10 +91,10 @@ def commit_action(new_df):
     st.session_state["df"] = new_df.copy()
 
 # ---------------------------------------------------------------------------
-# 4. Sidebar — Command Center
+# 4. Sidebar — Command Center (File Uploads Only)
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.header("⚡ Workspace")
+    st.header("⚡ Command Center")
     st.markdown("**Supported formats**")
     st.markdown("".join(f'<span class="pill">{fmt}</span>' for fmt in SUPPORTED_FORMATS), unsafe_allow_html=True)
     st.write("")
@@ -262,19 +119,20 @@ with st.sidebar:
                 st.session_state["df"] = initial_df.copy()
 
             df_active = st.session_state["df"]
+            
             st.markdown("---")
             c1, c2 = st.columns(2)
-            c1.metric("Total Rows", f"{df_active.shape[0]:,}")
-            c2.metric("Total Columns", df_active.shape[1])
+            c1.metric("Rows", f"{df_active.shape[0]:,}")
+            c2.metric("Columns", df_active.shape[1])
     else:
         st.caption("No data loaded yet — upload a file above to begin.")
 
 # ---------------------------------------------------------------------------
-# 5. Main workspace & Tabs
+# 5. Main workspace
 # ---------------------------------------------------------------------------
 if "df" in st.session_state:
     
-    # --- TOP TOOLBAR (Undo/Redo) ---
+    # --- NEW: TOP TOOLBAR (Undo/Redo) ---
     st.markdown("### ⏳ Data Timeline & Actions")
     toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([6, 1, 1])
     
@@ -299,12 +157,13 @@ if "df" in st.session_state:
 
     # --- TABS ---
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "🧹 Cleaning", "⚙️ Processing", "📊 Analysis", 
-        "📈 Visualize", "💡 Interpretation", "🎯 Decision"
+        "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
+        "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
     ])
 
-    # --- Tab 1: Data Cleaning ---
+    # --- Tab 1: Data Cleaning -----------------------------------------
     with tab1:
+        st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
         st.markdown("### 🧹 Data Cleaning")
         df = st.session_state["df"]
 
@@ -348,8 +207,9 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 2: Data Processing ---
+    # --- Tab 2: Data Processing --------------------------------------
     with tab2:
+        st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
         st.markdown("### ⚙️ Data Processing")
         df = st.session_state["df"]
         t1, t2 = st.columns(2)
@@ -367,29 +227,23 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 3: Data Analysis ---
+    # --- Tab 3: Data Analysis ----------------------------------------
     with tab3:
+        st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
         st.markdown("### 📊 Data Analysis")
         df = st.session_state["df"]
         st.markdown("#### Summary Statistics")
         st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
 
-    # --- Tab 4: Data Visualize ---
+    # --- Tab 4: Data Visualize --------------
     with tab4:
+        st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
         st.markdown("### 📈 Data Visualize")
         
         df = st.session_state["df"]
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
-        
-        # Updated chart theme for Material Design
-        chart_theme = dict(
-            plot_bgcolor="#FFFFFF", 
-            paper_bgcolor="#FFFFFF", 
-            font_family="Roboto", 
-            font_color="#49454F",
-            margin=dict(t=40, b=40, l=40, r=40)
-        )
+        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
 
         chart_type = st.selectbox(
             "Choose Visualization Type", 
@@ -420,9 +274,9 @@ if "df" in st.session_state:
                     st.plotly_chart(fig, use_container_width=True)
                 
                 with data_col:
-                    st.markdown("#### 📝 Summary")
+                    st.markdown("#### 📝 Data Summary")
                     st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
-                    st.write("**Top 5 Values:**")
+                    st.write("**Top 5 Highest Values:**")
                     top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
                     st.dataframe(top_data, hide_index=True, use_container_width=True)
 
@@ -440,17 +294,17 @@ if "df" in st.session_state:
                     st.plotly_chart(fig, use_container_width=True)
                     
                 with data_col:
-                    st.markdown("#### 📝 Summary")
+                    st.markdown("#### 📝 Data Summary")
                     st.write("**Category Breakdown:**")
                     pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
                     st.dataframe(pie_data, hide_index=True, use_container_width=True)
 
             elif chart_type == "Dashboard View":
-                st.markdown("#### 🚀 Insights Dashboard")
+                st.markdown("#### 🚀 Quick Insights Dashboard")
                 if len(numeric_cols) >= 1 and len(all_cols) >= 2:
                     d_col1, d_col2 = st.columns(2)
                     with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#6750A4"])
+                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
                         fig1.update_layout(**chart_theme)
                         st.plotly_chart(fig1, use_container_width=True)
                         
@@ -459,12 +313,12 @@ if "df" in st.session_state:
                         fig2.update_layout(**chart_theme)
                         st.plotly_chart(fig2, use_container_width=True)
                     with d_col2:
-                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#2196F3"])
+                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#7C3AED"])
                         fig3.update_layout(**chart_theme)
                         st.plotly_chart(fig3, use_container_width=True)
                         
                         if len(numeric_cols) >= 2:
-                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#1C1B1F"])
+                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#0F172A"])
                             fig4.update_layout(**chart_theme)
                             st.plotly_chart(fig4, use_container_width=True)
                 else:
@@ -475,7 +329,7 @@ if "df" in st.session_state:
                 chart_col, data_col = st.columns([3, 1])
                 
                 with chart_col:
-                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#6750A4"])
+                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
                     fig.update_layout(**chart_theme)
                     st.plotly_chart(fig, use_container_width=True)
                 with data_col:
@@ -487,14 +341,16 @@ if "df" in st.session_state:
         except Exception as e:
             st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
 
-    # --- Tab 5: Interpretation ---
+    # --- Tab 5: Interpretation ---------------------------------------------
     with tab5:
+        st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
         st.markdown("### 💡 Interpretation")
         if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
         st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
 
-    # --- Tab 6: Decision Making ---
+    # --- Tab 6: Decision Making ---------------------------------------------
     with tab6:
+        st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
         st.markdown("### 🎯 Decision Making")
         df = st.session_state["df"]
         m1, m2, m3 = st.columns(3)
@@ -517,10 +373,10 @@ if "df" in st.session_state:
 else:
     st.markdown("""
     <div class="empty-state">
-        <h3>📂 Ready for Data</h3>
-        <p>Upload a file from the Workspace in the sidebar to begin processing.</p>
+        <h3>📂 No dataset loaded</h3>
+        <p>Upload a file from the Command Center in the sidebar to begin.</p>
     </div>
     """, unsafe_allow_html=True)
 
 # Footer
-st.markdown('<p style="text-align:center;color:var(--md-on-surface-variant);font-size:12px;margin-top:40px;letter-spacing:1px;">INSIGHTIQ • DATA REFINERY</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align:center;color:var(--slate);font-family:\'IBM Plex Mono\',monospace;font-size:11px;margin-top:32px;">INSIGHTIQ · data refinery</p>', unsafe_allow_html=True)
