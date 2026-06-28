@@ -6,8 +6,16 @@ import plotly.express as px
 # ---------------------------------------------------------------------------
 # 1. Page configuration & Styling
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
+# UPDATED: Added initial_sidebar_state="collapsed"
+st.set_page_config(
+    page_title="InsightIQ | Data Refinery", 
+    page_icon="🧭", 
+    layout="wide",
+    initial_sidebar_state="collapsed" 
+)
 
+# UPDATED CSS: Removed `header { visibility: hidden; }`
+# Added transparent header, hidden action elements, and left padding for the sticky header
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -22,7 +30,10 @@ st.markdown("""
 }
 
 html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
-header { visibility: hidden; }
+
+/* Keep default header for the hamburger menu, but make it invisible and hide the right-side clutter */
+header { background-color: transparent !important; }
+[data-testid="stHeaderActionElements"] { display: none; }
 
 .sticky-header {
     position: fixed;
@@ -32,11 +43,12 @@ header { visibility: hidden; }
     background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 99999;
+    z-index: 99998; /* Lowered slightly to not block the hamburger */
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 14px 0;
+    padding-left: 60px; /* Added padding so title doesn't overlap with hamburger */
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
