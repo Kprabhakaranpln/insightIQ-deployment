@@ -337,13 +337,13 @@ section[data-testid="stSidebar"] {
 }
 
 /* Floating toggle button — pinned top-left, above the sticky header */
-.st-key-sb_toggle {
+.st-key-sb_toggle_btn {
     position: fixed;
     top: 9px;
     left: 18px;
     z-index: 100000;
 }
-.st-key-sb_toggle button {
+.st-key-sb_toggle_btn button {
     width: 38px;
     height: 38px;
     padding: 0 !important;
@@ -369,13 +369,11 @@ section[data-testid="stSidebar"] {
 # ---------------------------------------------------------------------------
 # 2b. Sidebar slide toggle — floating button + dynamic width/opacity CSS
 # ---------------------------------------------------------------------------
-toggle_box = st.container(key="sb_toggle")
-with toggle_box:
-    _icon = "✕" if st.session_state["sidebar_visible"] else "☰"
-    _tip = "Hide sidebar" if st.session_state["sidebar_visible"] else "Show sidebar"
-    if st.button(_icon, key="sb_toggle_btn", help=_tip):
-        st.session_state["sidebar_visible"] = not st.session_state["sidebar_visible"]
-        st.rerun()
+_icon = "✕" if st.session_state["sidebar_visible"] else "☰"
+_tip = "Hide sidebar" if st.session_state["sidebar_visible"] else "Show sidebar"
+if st.button(_icon, key="sb_toggle_btn", help=_tip):
+    st.session_state["sidebar_visible"] = not st.session_state["sidebar_visible"]
+    st.rerun()
 
 SIDEBAR_WIDTH = "21rem"
 if st.session_state["sidebar_visible"]:
