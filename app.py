@@ -27,7 +27,27 @@ st.markdown("""
     --line: #334155;    /* Dark gray borders */
 }
 
-html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; color: var(--ink); }
+html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
+
+/* --- FIX NATIVE STREAMLIT TEXT COLORS FOR DARK MODE --- */
+h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText, span {
+    color: var(--ink) !important;
+}
+
+/* Ensure our specific subtext stays muted */
+.subtitle, .desc, .status-text, .empty-state p, .pill {
+    color: var(--slate) !important;
+}
+
+/* Fix the bright white File Uploader */
+[data-testid="stFileUploadDropzone"] {
+    background-color: var(--surface) !important;
+    border: 1px dashed var(--slate) !important;
+}
+[data-testid="stFileUploadDropzone"] div, [data-testid="stFileUploadDropzone"] span {
+    color: var(--ink) !important;
+}
+/* ------------------------------------------------------ */
 
 /* Keep default header for the hamburger menu, but make it invisible and hide the right-side clutter */
 header { background-color: transparent !important; }
@@ -57,7 +77,7 @@ header { background-color: transparent !important; }
     font-weight: 700;
     letter-spacing: -0.5px;
     margin: 0;
-    color: var(--ink);
+    color: var(--ink) !important;
 }
 
 .emoji-icon { font-size: 28px; margin-right: 10px; }
@@ -66,37 +86,38 @@ header { background-color: transparent !important; }
 section[data-testid="stSidebar"] { background-color: var(--surface); border-right: 1px solid var(--line); }
 
 .hero-minimal { text-align: center; padding: 20px 0 8px 0; }
-.hero-minimal h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px; color: var(--ink); margin: 0 0 6px 0; letter-spacing: -1px; }
-.hero-minimal .subtitle { font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; color: var(--slate); max-width: 500px; margin: 0 auto; line-height: 1.5; }
+.hero-minimal h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px; margin: 0 0 6px 0; letter-spacing: -1px; }
+.hero-minimal .subtitle { font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; max-width: 500px; margin: 0 auto; line-height: 1.5; }
 
 .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 800px; margin: 16px auto 0 auto; padding: 0 20px; }
 .feature-item { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 12px; text-align: center; transition: all 0.15s ease; }
 .feature-item:hover { border-color: var(--teal); box-shadow: 0 0 12px rgba(56, 189, 248, 0.15); }
 .feature-item .icon { font-size: 22px; display: block; margin-bottom: 4px; }
-.feature-item .label { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink); }
-.feature-item .desc { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: var(--slate); margin: 0; }
+.feature-item .label { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500; }
+.feature-item .desc { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; margin: 0; }
 
 .dash-divider { border: none; border-top: 1px solid var(--line); margin: 16px 0 20px 0; opacity: 0.6; }
 .empty-state { border: 1px dashed var(--line); border-radius: 8px; padding: 48px 24px; text-align: center; background: var(--surface); }
-.empty-state h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; }
-.empty-state p { font-family: 'IBM Plex Sans', sans-serif; color: var(--slate); font-size: 14px; margin: 0; }
+.empty-state h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; margin: 0 0 4px 0; }
+.empty-state p { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; margin: 0; }
 
 .stTabs [data-baseweb="tab-list"] { gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; background: transparent; }
-.stTabs [data-baseweb="tab"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.02em; color: var(--slate); padding: 8px 16px; border-radius: 6px 6px 0 0; }
+.stTabs [data-baseweb="tab"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.02em; padding: 8px 16px; border-radius: 6px 6px 0 0; }
 .stTabs [aria-selected="true"] { color: var(--ink) !important; border-bottom: 2px solid var(--teal) !important; font-weight: 600; background: transparent !important; }
 
-.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: var(--surface); color: var(--ink); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; }
-.stButton > button:hover { background-color: var(--ink); color: var(--paper); border-color: var(--ink); }
+.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: var(--surface); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; }
+.stButton > button:hover { background-color: var(--ink) !important; color: var(--paper) !important; border-color: var(--ink) !important; }
+.stButton > button * { color: inherit !important; }
 
 [data-testid="metric-container"] { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; box-shadow: none; }
 footer, #MainMenu { visibility: hidden; }
 
 .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); margin-right: 6px; box-shadow: 0 0 8px var(--teal); }
-.status-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--slate); }
-.pill { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; padding: 2px 10px; margin: 2px 3px 2px 0; border: 1px solid var(--line); border-radius: 999px; color: var(--slate); background: var(--surface); }
+.status-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+.pill { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; padding: 2px 10px; margin: 2px 3px 2px 0; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
 
 /* Fix dataframe text color for dark mode */
-[data-testid="stDataFrame"] { color: var(--paper); } 
+[data-testid="stDataFrame"] { color: var(--paper) !important; } 
 </style>
 
 <div class="sticky-header">
