@@ -340,7 +340,7 @@ def load_dataset(uploaded_file):
         return None
 
 # ---------------------------------------------------------------------------
-# 5. Sidebar — Command Center
+# 5. Sidebar — Command Center (WITH STATE MANAGEMENT FIX)
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚡ Command Center")
@@ -359,10 +359,18 @@ with st.sidebar:
 
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
-            st.session_state["df"] = st.session_state["datasets"][active_name]
-            st.session_state["active_name"] = active_name
+            
+            # FIX: Only overwrite 'df' if the user selects a DIFFERENT file from the dropdown
+            if st.session_state.get("active_name") != active_name:
+                st.session_state["active_name"] = active_name
+                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
+            
+            # Fallback in case 'df' isn't set yet
+            elif "df" not in st.session_state:
+                st.session_state["df"] = st.session_state["datasets"][active_name].copy()
 
             df_active = st.session_state["df"]
+            
             st.markdown("---")
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
@@ -453,7 +461,7 @@ if "df" in st.session_state:
         st.markdown("#### Summary Statistics")
         st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
 
-    # --- Tab 4: Data Visualize (UPDATED VERSION) --------------
+    # --- Tab 4: Data Visualize --------------
     with tab4:
         st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
         st.markdown("### 📈 Data Visualize")
