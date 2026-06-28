@@ -39,13 +39,22 @@ h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText, span {
     color: var(--slate) !important;
 }
 
-/* Fix the bright white File Uploader */
-[data-testid="stFileUploadDropzone"] {
-    background-color: var(--surface) !important;
+/* --- FIX THE STUBBORN FILE UPLOADER --- */
+[data-testid="stFileUploader"] > div > section {
+    background-color: var(--paper) !important;
     border: 1px dashed var(--slate) !important;
 }
-[data-testid="stFileUploadDropzone"] div, [data-testid="stFileUploadDropzone"] span {
+[data-testid="stFileUploader"] * {
     color: var(--ink) !important;
+}
+[data-testid="stFileUploader"] button {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--ink) !important;
+}
+[data-testid="stFileUploader"] button:hover {
+    border-color: var(--teal) !important;
+    color: var(--teal) !important;
 }
 /* ------------------------------------------------------ */
 
