@@ -4,13 +4,10 @@ import pandas as pd
 import plotly.express as px
 
 # ---------------------------------------------------------------------------
-# 1. Page configuration
+# 1. Page configuration & Styling
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
 
-# ---------------------------------------------------------------------------
-# 2. Clean & Minimal Front Page Design
-# ---------------------------------------------------------------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
@@ -25,11 +22,8 @@ st.markdown("""
 }
 
 html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
-
-/* Hide Streamlit's default header */
 header { visibility: hidden; }
 
-/* Sticky Top Navigation Bar */
 .sticky-header {
     position: fixed;
     top: 0;
@@ -56,205 +50,40 @@ header { visibility: hidden; }
     color: var(--ink);
 }
 
-.emoji-icon {
-    font-size: 28px;
-    margin-right: 10px;
-}
+.emoji-icon { font-size: 28px; margin-right: 10px; }
+.stApp { background-color: var(--paper); }
+.block-container { padding-top: 5rem !important; max-width: 1100px !important; }
+section[data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px solid var(--line); }
 
-.stApp {
-    background-color: var(--paper);
-}
+.hero-minimal { text-align: center; padding: 20px 0 8px 0; }
+.hero-minimal h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px; color: var(--ink); margin: 0 0 6px 0; letter-spacing: -1px; }
+.hero-minimal .subtitle { font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; color: var(--slate); max-width: 500px; margin: 0 auto; line-height: 1.5; }
 
-/* Push content down */
-.block-container { 
-    padding-top: 5rem !important;
-    max-width: 1100px !important;
-}
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 800px; margin: 16px auto 0 auto; padding: 0 20px; }
+.feature-item { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 16px 12px; text-align: center; transition: all 0.15s ease; }
+.feature-item:hover { border-color: var(--teal); box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06); }
+.feature-item .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.feature-item .label { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink); }
+.feature-item .desc { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: var(--slate); margin: 0; }
 
-section[data-testid="stSidebar"] {
-    background-color: #FFFFFF;
-    border-right: 1px solid var(--line);
-}
+.dash-divider { border: none; border-top: 1px solid var(--line); margin: 16px 0 20px 0; opacity: 0.6; }
+.empty-state { border: 1px dashed var(--line); border-radius: 8px; padding: 48px 24px; text-align: center; background: #FFFFFF; }
+.empty-state h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; }
+.empty-state p { font-family: 'IBM Plex Sans', sans-serif; color: var(--slate); font-size: 14px; margin: 0; }
 
-/* Hero Section */
-.hero-minimal {
-    text-align: center;
-    padding: 20px 0 8px 0;
-}
+.stTabs [data-baseweb="tab-list"] { gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; background: transparent; }
+.stTabs [data-baseweb="tab"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.02em; color: var(--slate); padding: 8px 16px; border-radius: 6px 6px 0 0; }
+.stTabs [aria-selected="true"] { color: var(--ink) !important; border-bottom: 2px solid var(--teal) !important; font-weight: 600; background: transparent !important; }
 
-.hero-minimal h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 42px;
-    color: var(--ink);
-    margin: 0 0 6px 0;
-    letter-spacing: -1px;
-}
+.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: #FFFFFF; color: var(--ink); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; }
+.stButton > button:hover { background-color: var(--ink); color: #FFFFFF; border-color: var(--ink); }
 
-.hero-minimal .subtitle {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 16px;
-    color: var(--slate);
-    max-width: 500px;
-    margin: 0 auto;
-    line-height: 1.5;
-}
-
-/* Feature Cards */
-.feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    max-width: 800px;
-    margin: 16px auto 0 auto;
-    padding: 0 20px;
-}
-
-.feature-item {
-    background: #FFFFFF;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 16px 12px;
-    text-align: center;
-    transition: all 0.15s ease;
-}
-
-.feature-item:hover {
-    border-color: var(--teal);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
-}
-
-.feature-item .icon {
-    font-size: 22px;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.feature-item .label {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-}
-
-.feature-item .desc {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    color: var(--slate);
-    margin: 0;
-}
-
-/* Clean divider */
-.dash-divider {
-    border: none;
-    border-top: 1px solid var(--line);
-    margin: 16px 0 20px 0;
-    opacity: 0.6;
-}
-
-/* Empty state */
-.empty-state {
-    border: 1px dashed var(--line);
-    border-radius: 8px;
-    padding: 48px 24px;
-    text-align: center;
-    background: #FFFFFF;
-}
-
-.empty-state h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--ink);
-    margin: 0 0 4px 0;
-}
-
-.empty-state p {
-    font-family: 'IBM Plex Sans', sans-serif;
-    color: var(--slate);
-    font-size: 14px;
-    margin: 0;
-}
-
-/* Tabs */
-.stTabs [data-baseweb="tab-list"] { 
-    gap: 2px; 
-    border-bottom: 1px solid var(--line); 
-    flex-wrap: wrap;
-    background: transparent;
-}
-.stTabs [data-baseweb="tab"] { 
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    color: var(--slate);
-    padding: 8px 16px;
-    border-radius: 6px 6px 0 0;
-}
-.stTabs [aria-selected="true"] { 
-    color: var(--ink) !important; 
-    border-bottom: 2px solid var(--teal) !important;
-    font-weight: 600;
-    background: transparent !important;
-}
-
-/* Buttons */
-.stButton > button { 
-    font-family: 'IBM Plex Sans', sans-serif;
-    border: 1px solid var(--line);
-    background-color: #FFFFFF;
-    color: var(--ink);
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 13px;
-    transition: all 0.15s ease;
-}
-.stButton > button:hover { 
-    background-color: var(--ink);
-    color: #FFFFFF;
-    border-color: var(--ink);
-}
-
-/* Metrics */
-[data-testid="metric-container"] {
-    background: #FFFFFF;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: none;
-}
-
+[data-testid="metric-container"] { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 12px; box-shadow: none; }
 footer, #MainMenu { visibility: hidden; }
 
-/* Status dot */
-.status-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #22C55E;
-    margin-right: 6px;
-}
-
-.status-text {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: var(--slate);
-}
-
-/* Pill tags */
-.pill { 
-    display: inline-block; 
-    font-family: 'IBM Plex Mono', monospace; 
-    font-size: 10px; 
-    letter-spacing: 0.04em; 
-    padding: 2px 10px; 
-    margin: 2px 3px 2px 0; 
-    border: 1px solid var(--line); 
-    border-radius: 999px; 
-    color: var(--slate); 
-    background: #FFFFFF;
-}
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22C55E; margin-right: 6px; }
+.status-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--slate); }
+.pill { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; padding: 2px 10px; margin: 2px 3px 2px 0; border: 1px solid var(--line); border-radius: 999px; color: var(--slate); background: #FFFFFF; }
 </style>
 
 <div class="sticky-header">
@@ -264,22 +93,18 @@ footer, #MainMenu { visibility: hidden; }
         <span style="margin-left:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); font-weight:400;">data refinery</span>
     </div>
 </div>
-"""
-, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
 # ---------------------------------------------------------------------------
-# 3. Hero Section
+# 2. Hero Section
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
     <h1>Clean, analyze, visualize</h1>
     <p class="subtitle">Upload any dataset and go from raw to insights in minutes</p>
 </div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
 <div class="feature-grid">
     <div class="feature-item">
         <span class="icon">📥</span>
@@ -308,11 +133,10 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# 4. Core Logic Functions
+# 3. Core Logic Functions
 # ---------------------------------------------------------------------------
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
@@ -342,16 +166,13 @@ def load_dataset(uploaded_file):
 def commit_action(new_df):
     """Saves a new dataframe state into the history timeline for Undo/Redo."""
     current_idx = st.session_state["history_index"]
-    # If the user undid something and then made a new change, erase the alternate future timeline
     st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
-    
-    # Add the new change to the timeline
     st.session_state["df_history"].append(new_df.copy())
     st.session_state["history_index"] += 1
     st.session_state["df"] = new_df.copy()
 
 # ---------------------------------------------------------------------------
-# 5. Sidebar — Command Center (Now with Time Travel)
+# 4. Sidebar — Command Center
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚡ Command Center")
@@ -371,7 +192,7 @@ with st.sidebar:
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
             
-            # If a new dataset is selected (or it's the first load), initialize the history timeline
+            # Setup initial dataframe and history timeline
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
                 initial_df = st.session_state["datasets"][active_name].copy()
@@ -380,42 +201,48 @@ with st.sidebar:
                 st.session_state["df"] = initial_df.copy()
 
             df_active = st.session_state["df"]
-            
             st.markdown("---")
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
             c2.metric("Columns", df_active.shape[1])
-            
-            # --- UNDO / REDO BUTTONS ---
-            st.markdown("---")
-            st.markdown("**⏳ Data Timeline**")
-            u_col, r_col = st.columns(2)
-            
-            can_undo = st.session_state["history_index"] > 0
-            can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
-            
-            if u_col.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
-                st.session_state["history_index"] -= 1
-                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
-                st.rerun()
-                
-            if r_col.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
-                st.session_state["history_index"] += 1
-                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
-                st.rerun()
     else:
         st.caption("No data loaded yet — upload a file above to begin.")
 
 # ---------------------------------------------------------------------------
-# 6. Main workspace
+# 5. Main workspace & Tabs
 # ---------------------------------------------------------------------------
 if "df" in st.session_state:
+    
+    # --- TOP TOOLBAR (Undo/Redo) ---
+    st.markdown("### ⏳ Data Timeline & Actions")
+    toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([6, 1, 1])
+    
+    with toolbar_col1:
+        st.info(f"**Current Dataset:** `{st.session_state['active_name']}` | **Modifications:** `{st.session_state['history_index']}`")
+    
+    can_undo = st.session_state["history_index"] > 0
+    can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
+    
+    with toolbar_col2:
+        if st.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
+            st.session_state["history_index"] -= 1
+            st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+            st.rerun()
+    with toolbar_col3:
+        if st.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
+            st.session_state["history_index"] += 1
+            st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+            st.rerun()
+            
+    st.markdown("---")
+
+    # --- TABS ---
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
         "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
     ])
 
-    # --- Tab 1: Data Cleaning -----------------------------------------
+    # --- Tab 1: Data Cleaning ---
     with tab1:
         st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
         st.markdown("### 🧹 Data Cleaning")
@@ -461,7 +288,7 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 2: Data Processing --------------------------------------
+    # --- Tab 2: Data Processing ---
     with tab2:
         st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
         st.markdown("### ⚙️ Data Processing")
@@ -481,7 +308,7 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 3: Data Analysis ----------------------------------------
+    # --- Tab 3: Data Analysis ---
     with tab3:
         st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
         st.markdown("### 📊 Data Analysis")
@@ -489,7 +316,7 @@ if "df" in st.session_state:
         st.markdown("#### Summary Statistics")
         st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
 
-    # --- Tab 4: Data Visualize --------------
+    # --- Tab 4: Data Visualize ---
     with tab4:
         st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
         st.markdown("### 📈 Data Visualize")
@@ -507,15 +334,12 @@ if "df" in st.session_state:
 
         try:
             if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
-                # 1. Controls
                 c1, c2, c3 = st.columns(3)
                 with c1: x_axis = st.selectbox("X-Axis", all_cols)
                 with c2: y_axis = st.selectbox("Y-Axis", numeric_cols)
                 with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
                 
                 color_param = None if color_col == "None" else color_col
-                
-                # 2. Split screen: 75% for Chart, 25% for Side Data
                 chart_col, data_col = st.columns([3, 1])
                 
                 with chart_col:
@@ -598,14 +422,14 @@ if "df" in st.session_state:
         except Exception as e:
             st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
 
-    # --- Tab 5: Interpretation ---------------------------------------------
+    # --- Tab 5: Interpretation ---
     with tab5:
         st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
         st.markdown("### 💡 Interpretation")
         if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
         st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
 
-    # --- Tab 6: Decision Making ---------------------------------------------
+    # --- Tab 6: Decision Making ---
     with tab6:
         st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
         st.markdown("### 🎯 Decision Making")
