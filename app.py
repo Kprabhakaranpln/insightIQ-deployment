@@ -9,6 +9,12 @@ import plotly.express as px
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
 
 # ---------------------------------------------------------------------------
+# 1b. Sidebar visibility state (used by the custom slide toggle button)
+# ---------------------------------------------------------------------------
+if "sidebar_visible" not in st.session_state:
+    st.session_state["sidebar_visible"] = True
+
+# ---------------------------------------------------------------------------
 # 2. Clean & Minimal Front Page Design
 # ---------------------------------------------------------------------------
 st.markdown("""
@@ -255,6 +261,43 @@ footer, #MainMenu { visibility: hidden; }
     color: var(--slate); 
     background: #FFFFFF;
 }
+
+/* ----------------------------------------------------------------------- */
+/* Custom sidebar slide toggle                                             */
+/* The sticky header above sits at z-index 99999 and spans the full width, */
+/* which was covering Streamlit's native sidebar collapse arrow — that's   */
+/* why it looked "broken". We hide the native controls and drive the       */
+/* sidebar with our own floating button + animated width instead.         */
+/* ----------------------------------------------------------------------- */
+[data-testid="collapsedControl"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapsedControl"] {
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] {
+    transition: width 0.28s ease-in-out, min-width 0.28s ease-in-out, opacity 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+/* Floating toggle button — pinned top-left, above the sticky header */
+.st-key-sb_toggle {
+    position: fixed;
+    top: 9px;
+    left: 18px;
+    z-index: 100000;
+}
+.st-key-sb_toggle button {
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 </style>
 
 <div class="sticky-header">
@@ -266,6 +309,47 @@ footer, #MainMenu { visibility: hidden; }
 </div>
 """
 , unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# 2b. Sidebar slide toggle — floating button + dynamic width/opacity CSS
+# ---------------------------------------------------------------------------
+toggle_box = st.container(key="sb_toggle")
+with toggle_box:
+    _icon = "✕" if st.session_state["sidebar_visible"] else "☰"
+    _tip = "Hide sidebar" if st.session_state["sidebar_visible"] else "Show sidebar"
+    if st.button(_icon, key="sb_toggle_btn", help=_tip):
+        st.session_state["sidebar_visible"] = not st.session_state["sidebar_visible"]
+        st.rerun()
+
+SIDEBAR_WIDTH = "21rem"
+if st.session_state["sidebar_visible"]:
+    st.markdown(
+        f"""
+        <style>
+        section[data-testid="stSidebar"] {{
+            width: {SIDEBAR_WIDTH} !important;
+            min-width: {SIDEBAR_WIDTH} !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+else:
+    st.markdown(
+        """
+        <style>
+        section[data-testid="stSidebar"] {
+            width: 0rem !important;
+            min-width: 0rem !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
