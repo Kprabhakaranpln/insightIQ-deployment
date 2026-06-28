@@ -9,12 +9,6 @@ import plotly.express as px
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
 
 # ---------------------------------------------------------------------------
-# 1b. Sidebar visibility state (used by the custom slide toggle button)
-# ---------------------------------------------------------------------------
-if "sidebar_visible" not in st.session_state:
-    st.session_state["sidebar_visible"] = True
-
-# ---------------------------------------------------------------------------
 # 2. Clean & Minimal Front Page Design
 # ---------------------------------------------------------------------------
 st.markdown("""
@@ -106,104 +100,48 @@ section[data-testid="stSidebar"] {
     line-height: 1.5;
 }
 
-/* Eyebrow label (small caps tag above a heading) */
-.eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--slate);
-    margin: 0 0 6px 0;
-}
-
-/* "The Process" timeline section */
-.process-section {
-    text-align: center;
-    max-width: 900px;
-    margin: 28px auto 0 auto;
+/* Feature Cards */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 800px;
+    margin: 16px auto 0 auto;
     padding: 0 20px;
 }
 
-.process-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 24px;
-    color: var(--ink);
-    margin: 0 0 28px 0;
-    letter-spacing: -0.3px;
+.feature-item {
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+    transition: all 0.15s ease;
 }
 
-.timeline-row {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 640px;
-    margin: 0 auto 24px auto;
-    padding: 0 50px;
+.feature-item:hover {
+    border-color: var(--teal);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
 }
 
-.timeline-line {
-    position: absolute;
-    top: 50%;
-    left: 50px;
-    right: 50px;
-    border-top: 2px dashed var(--line);
-    z-index: 0;
-}
-
-.timeline-icon {
-    position: relative;
-    z-index: 1;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 1.5px solid var(--ink);
-    background: var(--paper);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.feature-item .icon {
     font-size: 22px;
+    display: block;
+    margin-bottom: 4px;
 }
 
-.stage-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 10px;
-    text-align: left;
-}
-
-.stage-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin: 0 0 6px 0;
-}
-
-.stage-heading {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--ink);
-    margin: 0 0 6px 0;
-}
-
-.stage-desc {
+.feature-item .label {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 13px;
-    color: var(--slate);
-    line-height: 1.5;
-    margin: 0;
+    font-weight: 500;
+    color: var(--ink);
 }
 
-@media (max-width: 700px) {
-    .stage-grid { grid-template-columns: 1fr; }
-    .timeline-row { padding: 0 20px; }
+.feature-item .desc {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    color: var(--slate);
+    margin: 0;
 }
 
 /* Clean divider */
@@ -317,43 +255,6 @@ footer, #MainMenu { visibility: hidden; }
     color: var(--slate); 
     background: #FFFFFF;
 }
-
-/* ----------------------------------------------------------------------- */
-/* Custom sidebar slide toggle                                             */
-/* The sticky header above sits at z-index 99999 and spans the full width, */
-/* which was covering Streamlit's native sidebar collapse arrow — that's   */
-/* why it looked "broken". We hide the native controls and drive the       */
-/* sidebar with our own floating button + animated width instead.         */
-/* ----------------------------------------------------------------------- */
-[data-testid="collapsedControl"],
-[data-testid="stSidebarCollapseButton"],
-[data-testid="stSidebarCollapsedControl"] {
-    display: none !important;
-}
-
-section[data-testid="stSidebar"] {
-    transition: width 0.28s ease-in-out, min-width 0.28s ease-in-out, opacity 0.2s ease-in-out;
-    overflow: hidden;
-}
-
-/* Floating toggle button — pinned top-left, above the sticky header */
-.st-key-sb_toggle_btn {
-    position: fixed;
-    top: 9px;
-    left: 18px;
-    z-index: 100000;
-}
-.st-key-sb_toggle_btn button {
-    width: 38px;
-    height: 38px;
-    padding: 0 !important;
-    border-radius: 8px !important;
-    font-size: 16px !important;
-    line-height: 1 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 </style>
 
 <div class="sticky-header">
@@ -366,45 +267,6 @@ section[data-testid="stSidebar"] {
 """
 , unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------
-# 2b. Sidebar slide toggle — floating button + dynamic width/opacity CSS
-# ---------------------------------------------------------------------------
-_icon = "✕" if st.session_state["sidebar_visible"] else "☰"
-_tip = "Hide sidebar" if st.session_state["sidebar_visible"] else "Show sidebar"
-if st.button(_icon, key="sb_toggle_btn", help=_tip):
-    st.session_state["sidebar_visible"] = not st.session_state["sidebar_visible"]
-    st.rerun()
-
-SIDEBAR_WIDTH = "21rem"
-if st.session_state["sidebar_visible"]:
-    st.markdown(
-        f"""
-        <style>
-        section[data-testid="stSidebar"] {{
-            width: {SIDEBAR_WIDTH} !important;
-            min-width: {SIDEBAR_WIDTH} !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-else:
-    st.markdown(
-        """
-        <style>
-        section[data-testid="stSidebar"] {
-            width: 0rem !important;
-            min-width: 0rem !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
 # ---------------------------------------------------------------------------
@@ -412,9 +274,28 @@ SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "a
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
-    <p class="eyebrow" style="text-align:center;">Data Operations Platform</p>
-    <h1>InsightIQ</h1>
-    <p class="subtitle">Upload a dataset, clean it, reshape it, and chart it — all in one pass.</p>
+    <h1>Clean, analyze, visualize</h1>
+    <p class="subtitle">Upload any dataset and go from raw to insights in minutes</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="feature-grid">
+    <div class="feature-item">
+        <span class="icon">📥</span>
+        <div class="label">Import</div>
+        <p class="desc">8 formats supported</p>
+    </div>
+    <div class="feature-item">
+        <span class="icon">🧹</span>
+        <div class="label">Clean</div>
+        <p class="desc">Remove noise & fix data</p>
+    </div>
+    <div class="feature-item">
+        <span class="icon">📊</span>
+        <div class="label">Visualize</div>
+        <p class="desc">Interactive charts & dashboards</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -422,44 +303,11 @@ st.markdown(
     f"""
     <div style="text-align:center; margin: 12px 0 8px 0;">
         <span class="status-dot"></span>
-        <span class="status-text">{len(SUPPORTED_FORMATS)} formats supported · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
+        <span class="status-text">Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
     </div>
     """,
     unsafe_allow_html=True,
 )
-
-st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
-
-# --- "The Process" timeline -----------------------------------------------
-st.markdown("""
-<div class="process-section">
-    <p class="eyebrow">The Process</p>
-    <h2 class="process-title">How a dataset moves through InsightIQ</h2>
-    <div class="timeline-row">
-        <div class="timeline-line"></div>
-        <div class="timeline-icon">📥</div>
-        <div class="timeline-icon">⚙️</div>
-        <div class="timeline-icon">📊</div>
-    </div>
-    <div class="stage-grid">
-        <div class="stage-col">
-            <p class="stage-tag">Stage 01 · Acquire &amp; Clean</p>
-            <h3 class="stage-heading">Ingest &amp; Purify</h3>
-            <p class="stage-desc">Upload datasets from multiple formats, drop duplicates, and fix inconsistent entries automatically.</p>
-        </div>
-        <div class="stage-col">
-            <p class="stage-tag">Stage 02 · Process &amp; Analyze</p>
-            <h3 class="stage-heading">Shape &amp; Explore</h3>
-            <p class="stage-desc">Transform column structures and calculate deep statistical summaries automatically.</p>
-        </div>
-        <div class="stage-col">
-            <p class="stage-tag">Stage 03 · Visualize &amp; Decide</p>
-            <h3 class="stage-heading">Find what matters</h3>
-            <p class="stage-desc">Chart distributions and correlations to record insights and make final decisions.</p>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
