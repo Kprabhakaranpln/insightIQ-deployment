@@ -4,93 +4,156 @@ import pandas as pd
 import plotly.express as px
 
 # ---------------------------------------------------------------------------
-# 1. Page configuration & Styling
+# 1. Page configuration & Material Styling
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="InsightIQ | Data Refinery", page_icon="🧭", layout="wide")
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Import official Material Design font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
-    --paper: #F8FAFC;
-    --ink: #0F172A;
-    --teal: #2563EB;
-    --copper: #7C3AED;
-    --slate: #475569;
-    --line: #E2E8F0;
+    /* Material 3 Color Palette */
+    --md-primary: #6750A4; 
+    --md-on-primary: #FFFFFF;
+    --md-background: #F3F4F6;
+    --md-surface: #FFFFFF;
+    --md-on-surface: #1C1B1F;
+    --md-on-surface-variant: #49454F;
+    --md-outline: #CAC4D0;
+    
+    /* Material Elevations (Shadows) */
+    --md-elevation-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --md-elevation-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
 
-html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
+html, body, [class*="css"] { 
+    font-family: 'Roboto', sans-serif !important; 
+    color: var(--md-on-surface);
+}
 header { visibility: hidden; }
 
+.stApp { background-color: var(--md-background); }
+.block-container { padding-top: 5rem !important; max-width: 1100px !important; }
+
+/* Material App Bar */
 .sticky-header {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    top: 0; left: 0; width: 100%;
+    background-color: var(--md-surface);
+    box-shadow: var(--md-elevation-1);
     z-index: 99999;
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    padding: 14px 24px;
 }
-
 .sticky-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin: 0;
-    color: var(--ink);
+    font-weight: 500; 
+    font-size: 22px; 
+    margin: 0; 
+    letter-spacing: 0.15px;
+    color: var(--md-on-surface);
+}
+.emoji-icon { font-size: 24px; margin-right: 12px; }
+
+/* Sidebar styling */
+section[data-testid="stSidebar"] { 
+    background-color: var(--md-surface); 
+    border-right: 1px solid var(--md-outline); 
 }
 
-.emoji-icon { font-size: 28px; margin-right: 10px; }
-.stApp { background-color: var(--paper); }
-.block-container { padding-top: 5rem !important; max-width: 1100px !important; }
-section[data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px solid var(--line); }
+/* Hero Section */
+.hero-minimal { text-align: center; padding: 24px 0 16px 0; }
+.hero-minimal h1 { font-weight: 700; font-size: 40px; color: var(--md-primary); margin: 0 0 8px 0; letter-spacing: -0.5px; }
+.hero-minimal .subtitle { font-size: 16px; color: var(--md-on-surface-variant); max-width: 500px; margin: 0 auto; line-height: 1.5; }
 
-.hero-minimal { text-align: center; padding: 20px 0 8px 0; }
-.hero-minimal h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px; color: var(--ink); margin: 0 0 6px 0; letter-spacing: -1px; }
-.hero-minimal .subtitle { font-family: 'IBM Plex Sans', sans-serif; font-size: 16px; color: var(--slate); max-width: 500px; margin: 0 auto; line-height: 1.5; }
+/* Material Cards for Features */
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 800px; margin: 24px auto 0 auto; padding: 0 20px; }
+.feature-item { 
+    background: var(--md-surface); 
+    border-radius: 12px; 
+    box-shadow: var(--md-elevation-1); 
+    padding: 20px 16px; 
+    text-align: center; 
+    transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.feature-item:hover { box-shadow: var(--md-elevation-2); }
+.feature-item .icon { font-size: 28px; display: block; margin-bottom: 8px; color: var(--md-primary); }
+.feature-item .label { font-size: 14px; font-weight: 500; color: var(--md-on-surface); letter-spacing: 0.1px; }
+.feature-item .desc { font-size: 13px; color: var(--md-on-surface-variant); margin: 4px 0 0 0; }
 
-.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 800px; margin: 16px auto 0 auto; padding: 0 20px; }
-.feature-item { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 16px 12px; text-align: center; transition: all 0.15s ease; }
-.feature-item:hover { border-color: var(--teal); box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06); }
-.feature-item .icon { font-size: 22px; display: block; margin-bottom: 4px; }
-.feature-item .label { font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink); }
-.feature-item .desc { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: var(--slate); margin: 0; }
+.dash-divider { border: none; border-top: 1px solid var(--md-outline); margin: 24px 0; opacity: 0.5; }
 
-.dash-divider { border: none; border-top: 1px solid var(--line); margin: 16px 0 20px 0; opacity: 0.6; }
-.empty-state { border: 1px dashed var(--line); border-radius: 8px; padding: 48px 24px; text-align: center; background: #FFFFFF; }
-.empty-state h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; }
-.empty-state p { font-family: 'IBM Plex Sans', sans-serif; color: var(--slate); font-size: 14px; margin: 0; }
+/* Empty State Card */
+.empty-state { 
+    border-radius: 12px; 
+    padding: 48px 24px; 
+    text-align: center; 
+    background: var(--md-surface);
+    box-shadow: var(--md-elevation-1);
+}
+.empty-state h3 { font-size: 20px; font-weight: 500; color: var(--md-on-surface); margin: 0 0 8px 0; }
+.empty-state p { color: var(--md-on-surface-variant); font-size: 15px; margin: 0; }
 
-.stTabs [data-baseweb="tab-list"] { gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap; background: transparent; }
-.stTabs [data-baseweb="tab"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.02em; color: var(--slate); padding: 8px 16px; border-radius: 6px 6px 0 0; }
-.stTabs [aria-selected="true"] { color: var(--ink) !important; border-bottom: 2px solid var(--teal) !important; font-weight: 600; background: transparent !important; }
+/* Material Tabs */
+.stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 1px solid var(--md-outline); background: transparent; }
+.stTabs [data-baseweb="tab"] { 
+    font-weight: 500; 
+    font-size: 14px; 
+    color: var(--md-on-surface-variant); 
+    padding: 12px 16px; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stTabs [aria-selected="true"] { 
+    color: var(--md-primary) !important; 
+    border-bottom: 3px solid var(--md-primary) !important; 
+    background: transparent !important; 
+}
 
-.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: #FFFFFF; color: var(--ink); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; }
-.stButton > button:hover { background-color: var(--ink); color: #FFFFFF; border-color: var(--ink); }
+/* Material Buttons (Pill shaped M3) */
+.stButton > button { 
+    background-color: transparent; 
+    color: var(--md-primary); 
+    border: 1px solid var(--md-outline); 
+    border-radius: 100px; 
+    font-weight: 500; 
+    font-size: 14px; 
+    letter-spacing: 0.1px;
+    padding: 8px 24px;
+    transition: background-color 0.2s ease, border-color 0.2s ease; 
+}
+.stButton > button:hover { 
+    background-color: rgba(103, 80, 164, 0.08); 
+    border-color: var(--md-primary); 
+    color: var(--md-primary);
+}
 
-[data-testid="metric-container"] { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 12px; box-shadow: none; }
+/* Material Metrics Cards */
+[data-testid="metric-container"] { 
+    background: var(--md-surface); 
+    border-radius: 12px; 
+    padding: 16px; 
+    box-shadow: var(--md-elevation-1);
+    border: none;
+}
+[data-testid="metric-container"] label {
+    color: var(--md-on-surface-variant) !important;
+    font-weight: 500;
+}
+
 footer, #MainMenu { visibility: hidden; }
 
-.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22C55E; margin-right: 6px; }
-.status-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--slate); }
-.pill { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; padding: 2px 10px; margin: 2px 3px 2px 0; border: 1px solid var(--line); border-radius: 999px; color: var(--slate); background: #FFFFFF; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; margin-right: 8px; }
+.status-text { font-size: 13px; color: var(--md-on-surface-variant); font-weight: 500; }
+.pill { display: inline-block; font-size: 11px; letter-spacing: 0.5px; padding: 4px 12px; margin: 2px 4px 2px 0; border: 1px solid var(--md-outline); border-radius: 16px; color: var(--md-on-surface-variant); background: var(--md-surface); font-weight: 500; text-transform: uppercase; }
 </style>
 
 <div class="sticky-header">
     <div style="display:flex; align-items:center;">
-        <span class="emoji-icon">🧠</span>
-        <h1 class="sticky-title">InsightIQ</h1>
-        <span style="margin-left:12px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); font-weight:400;">data refinery</span>
+        <span class="emoji-icon">📊</span>
+        <h1 class="sticky-title">InsightIQ <span style="font-size:14px; color:var(--md-on-surface-variant); font-weight:400; margin-left:8px;">Data Refinery</span></h1>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -102,33 +165,33 @@ SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "a
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
-    <h1>Clean, analyze, visualize</h1>
-    <p class="subtitle">Upload any dataset and go from raw to insights in minutes</p>
+    <h1>Refine your data.</h1>
+    <p class="subtitle">Upload any dataset and go from raw numbers to actionable insights instantly.</p>
 </div>
 <div class="feature-grid">
     <div class="feature-item">
-        <span class="icon">📥</span>
+        <span class="icon">upload_file</span>
         <div class="label">Import</div>
         <p class="desc">8 formats supported</p>
     </div>
     <div class="feature-item">
-        <span class="icon">🧹</span>
+        <span class="icon">auto_fix_high</span>
         <div class="label">Clean</div>
         <p class="desc">Remove noise & fix data</p>
     </div>
     <div class="feature-item">
-        <span class="icon">📊</span>
+        <span class="icon">query_stats</span>
         <div class="label">Visualize</div>
-        <p class="desc">Interactive charts & dashboards</p>
+        <p class="desc">Interactive dashboards</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown(
     f"""
-    <div style="text-align:center; margin: 12px 0 8px 0;">
+    <div style="text-align:center; margin: 24px 0 8px 0;">
         <span class="status-dot"></span>
-        <span class="status-text">Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
+        <span class="status-text">System Ready · {len(SUPPORTED_FORMATS)} formats · {" · ".join(f.upper() for f in SUPPORTED_FORMATS)}</span>
     </div>
     """,
     unsafe_allow_html=True,
@@ -164,7 +227,6 @@ def load_dataset(uploaded_file):
         return None
 
 def commit_action(new_df):
-    """Saves a new dataframe state into the history timeline for Undo/Redo."""
     current_idx = st.session_state["history_index"]
     st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
     st.session_state["df_history"].append(new_df.copy())
@@ -175,7 +237,7 @@ def commit_action(new_df):
 # 4. Sidebar — Command Center
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.header("⚡ Command Center")
+    st.header("⚡ Workspace")
     st.markdown("**Supported formats**")
     st.markdown("".join(f'<span class="pill">{fmt}</span>' for fmt in SUPPORTED_FORMATS), unsafe_allow_html=True)
     st.write("")
@@ -192,7 +254,6 @@ with st.sidebar:
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
             
-            # Setup initial dataframe and history timeline
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
                 initial_df = st.session_state["datasets"][active_name].copy()
@@ -203,8 +264,8 @@ with st.sidebar:
             df_active = st.session_state["df"]
             st.markdown("---")
             c1, c2 = st.columns(2)
-            c1.metric("Rows", f"{df_active.shape[0]:,}")
-            c2.metric("Columns", df_active.shape[1])
+            c1.metric("Total Rows", f"{df_active.shape[0]:,}")
+            c2.metric("Total Columns", df_active.shape[1])
     else:
         st.caption("No data loaded yet — upload a file above to begin.")
 
@@ -238,13 +299,12 @@ if "df" in st.session_state:
 
     # --- TABS ---
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
-        "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
+        "🧹 Cleaning", "⚙️ Processing", "📊 Analysis", 
+        "📈 Visualize", "💡 Interpretation", "🎯 Decision"
     ])
 
     # --- Tab 1: Data Cleaning ---
     with tab1:
-        st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
         st.markdown("### 🧹 Data Cleaning")
         df = st.session_state["df"]
 
@@ -290,7 +350,6 @@ if "df" in st.session_state:
 
     # --- Tab 2: Data Processing ---
     with tab2:
-        st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
         st.markdown("### ⚙️ Data Processing")
         df = st.session_state["df"]
         t1, t2 = st.columns(2)
@@ -310,7 +369,6 @@ if "df" in st.session_state:
 
     # --- Tab 3: Data Analysis ---
     with tab3:
-        st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
         st.markdown("### 📊 Data Analysis")
         df = st.session_state["df"]
         st.markdown("#### Summary Statistics")
@@ -318,13 +376,20 @@ if "df" in st.session_state:
 
     # --- Tab 4: Data Visualize ---
     with tab4:
-        st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
         st.markdown("### 📈 Data Visualize")
         
         df = st.session_state["df"]
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
-        chart_theme = dict(plot_bgcolor="#F8FAFC", paper_bgcolor="#F8FAFC", font_family="IBM Plex Sans", margin=dict(t=40, b=40, l=40, r=40))
+        
+        # Updated chart theme for Material Design
+        chart_theme = dict(
+            plot_bgcolor="#FFFFFF", 
+            paper_bgcolor="#FFFFFF", 
+            font_family="Roboto", 
+            font_color="#49454F",
+            margin=dict(t=40, b=40, l=40, r=40)
+        )
 
         chart_type = st.selectbox(
             "Choose Visualization Type", 
@@ -355,9 +420,9 @@ if "df" in st.session_state:
                     st.plotly_chart(fig, use_container_width=True)
                 
                 with data_col:
-                    st.markdown("#### 📝 Data Summary")
+                    st.markdown("#### 📝 Summary")
                     st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
-                    st.write("**Top 5 Highest Values:**")
+                    st.write("**Top 5 Values:**")
                     top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
                     st.dataframe(top_data, hide_index=True, use_container_width=True)
 
@@ -375,17 +440,17 @@ if "df" in st.session_state:
                     st.plotly_chart(fig, use_container_width=True)
                     
                 with data_col:
-                    st.markdown("#### 📝 Data Summary")
+                    st.markdown("#### 📝 Summary")
                     st.write("**Category Breakdown:**")
                     pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
                     st.dataframe(pie_data, hide_index=True, use_container_width=True)
 
             elif chart_type == "Dashboard View":
-                st.markdown("#### 🚀 Quick Insights Dashboard")
+                st.markdown("#### 🚀 Insights Dashboard")
                 if len(numeric_cols) >= 1 and len(all_cols) >= 2:
                     d_col1, d_col2 = st.columns(2)
                     with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#2563EB"])
+                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Distribution of {numeric_cols[0]}", text_auto=True, color_discrete_sequence=["#6750A4"])
                         fig1.update_layout(**chart_theme)
                         st.plotly_chart(fig1, use_container_width=True)
                         
@@ -394,12 +459,12 @@ if "df" in st.session_state:
                         fig2.update_layout(**chart_theme)
                         st.plotly_chart(fig2, use_container_width=True)
                     with d_col2:
-                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#7C3AED"])
+                        fig3 = px.box(df, y=numeric_cols[0], title=f"Spread of {numeric_cols[0]}", color_discrete_sequence=["#2196F3"])
                         fig3.update_layout(**chart_theme)
                         st.plotly_chart(fig3, use_container_width=True)
                         
                         if len(numeric_cols) >= 2:
-                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#0F172A"])
+                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"{numeric_cols[0]} vs {numeric_cols[1]}", color_discrete_sequence=["#1C1B1F"])
                             fig4.update_layout(**chart_theme)
                             st.plotly_chart(fig4, use_container_width=True)
                 else:
@@ -410,7 +475,7 @@ if "df" in st.session_state:
                 chart_col, data_col = st.columns([3, 1])
                 
                 with chart_col:
-                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
+                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#6750A4"])
                     fig.update_layout(**chart_theme)
                     st.plotly_chart(fig, use_container_width=True)
                 with data_col:
@@ -424,14 +489,12 @@ if "df" in st.session_state:
 
     # --- Tab 5: Interpretation ---
     with tab5:
-        st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
         st.markdown("### 💡 Interpretation")
         if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
         st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
 
     # --- Tab 6: Decision Making ---
     with tab6:
-        st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
         st.markdown("### 🎯 Decision Making")
         df = st.session_state["df"]
         m1, m2, m3 = st.columns(3)
@@ -454,10 +517,10 @@ if "df" in st.session_state:
 else:
     st.markdown("""
     <div class="empty-state">
-        <h3>📂 No dataset loaded</h3>
-        <p>Upload a file from the Command Center in the sidebar to begin.</p>
+        <h3>📂 Ready for Data</h3>
+        <p>Upload a file from the Workspace in the sidebar to begin processing.</p>
     </div>
     """, unsafe_allow_html=True)
 
 # Footer
-st.markdown('<p style="text-align:center;color:var(--slate);font-family:\'IBM Plex Mono\',monospace;font-size:11px;margin-top:32px;">INSIGHTIQ · data refinery</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align:center;color:var(--md-on-surface-variant);font-size:12px;margin-top:40px;letter-spacing:1px;">INSIGHTIQ • DATA REFINERY</p>', unsafe_allow_html=True)
