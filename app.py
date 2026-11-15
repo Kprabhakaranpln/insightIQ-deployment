@@ -3,9 +3,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# ---------------------------------------------------------------------------
-# 1. Page configuration & Styling
-# ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="InsightIQ | Data Refinery", 
     page_icon="🧭", 
@@ -28,7 +25,6 @@ st.markdown("""
 
 html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 
-/* Keep default header for the hamburger menu, but make it invisible and hide the right-side clutter */
 header { background-color: transparent !important; }
 [data-testid="stHeaderActionElements"] { display: none; }
 
@@ -40,12 +36,12 @@ header { background-color: transparent !important; }
     background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 99998; /* Lowered slightly to not block the hamburger */
+    z-index: 99998;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 14px 0;
-    padding-left: 60px; /* Added padding so title doesn't overlap with hamburger */
+    padding-left: 60px;
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
@@ -106,9 +102,6 @@ footer, #MainMenu { visibility: hidden; }
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
-# ---------------------------------------------------------------------------
-# 2. Hero Section
-# ---------------------------------------------------------------------------
 st.markdown("""
 <div class="hero-minimal">
     <h1>Clean, analyze, visualize</h1>
@@ -144,9 +137,6 @@ st.markdown(
 )
 st.markdown('<hr class="dash-divider">', unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------
-# 3. Core Logic Functions
-# ---------------------------------------------------------------------------
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
     uploaded_file.seek(0)
@@ -159,7 +149,8 @@ def load_dataset(uploaded_file):
         elif name.endswith(".xml"): return pd.read_xml(uploaded_file)
         elif name.endswith(".parquet"): return pd.read_parquet(uploaded_file)
         elif name.endswith(".avro"):
-            try: import fastavro
+            try: 
+                import fastavro
             except ImportError:
                 st.error("Reading .avro files needs the 'fastavro' package — install with: pip install fastavro")
                 return None
@@ -173,16 +164,12 @@ def load_dataset(uploaded_file):
         return None
 
 def commit_action(new_df):
-    """Saves a new dataframe state into the history timeline for Undo/Redo."""
     current_idx = st.session_state["history_index"]
     st.session_state["df_history"] = st.session_state["df_history"][:current_idx + 1]
     st.session_state["df_history"].append(new_df.copy())
     st.session_state["history_index"] += 1
     st.session_state["df"] = new_df.copy()
 
-# ---------------------------------------------------------------------------
-# 4. Sidebar — Command Center
-# ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚡ Command Center")
     st.markdown("**Supported formats**")
@@ -201,7 +188,6 @@ with st.sidebar:
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active dataset", list(st.session_state["datasets"].keys()))
             
-            # Setup initial dataframe and history timeline
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
                 initial_df = st.session_state["datasets"][active_name].copy()
@@ -217,12 +203,8 @@ with st.sidebar:
     else:
         st.caption("No data loaded yet — upload a file above to begin.")
 
-# ---------------------------------------------------------------------------
-# 5. Main workspace
-# ---------------------------------------------------------------------------
 if "df" in st.session_state:
     
-    # --- TOP TOOLBAR (Undo/Redo) ---
     st.markdown("### ⏳ Data Timeline & Actions")
     toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([6, 1, 1])
     
@@ -245,13 +227,11 @@ if "df" in st.session_state:
             
     st.markdown("---")
 
-    # --- TABS WORKSPACE ---
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🧹 Data Cleaning", "⚙️ Data Processing", "📊 Data Analysis", 
         "📈 Data Visualize", "💡 Interpretation", "🎯 Decision Making"
     ])
 
-    # --- Tab 1: Data Cleaning ---
     with tab1:
         st.markdown('<p class="stage-eyebrow">Stage 01</p>', unsafe_allow_html=True)
         st.markdown("### 🧹 Data Cleaning")
@@ -297,7 +277,6 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 2: Data Processing ---
     with tab2:
         st.markdown('<p class="stage-eyebrow">Stage 02</p>', unsafe_allow_html=True)
         st.markdown("### ⚙️ Data Processing")
@@ -317,7 +296,6 @@ if "df" in st.session_state:
         st.markdown("#### Data Preview")
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    # --- Tab 3: Data Analysis & Pivot (UPDATED WITH MULTIPLE PIVOTS) ---
     with tab3:
         st.markdown('<p class="stage-eyebrow">Stage 03</p>', unsafe_allow_html=True)
         st.markdown("### 📊 Data Analysis & Pivot")
@@ -329,14 +307,12 @@ if "df" in st.session_state:
         st.markdown("---")
         st.markdown("#### 🔀 Pivot Table Generator")
         
-        # Initialize pivot storage if not exists
         if "pivot_results" not in st.session_state:
             st.session_state["pivot_results"] = []
         
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
         
-        # Pivot creation form
         with st.form("pivot_form"):
             st.markdown("##### Create New Pivot Table")
             p_col1, p_col2, p_col3 = st.columns(3)
@@ -350,7 +326,6 @@ if "df" in st.session_state:
             pivot_name = st.text_input("Pivot Table Name (optional)", value=f"Pivot {len(st.session_state['pivot_results']) + 1}")
             create_pivot = st.form_submit_button("➕ Create Pivot Table", type="primary")
 
-        # Create new pivot
         if create_pivot and pivot_index != "None" and pivot_values != "None":
             try:
                 pivot_df = pd.pivot_table(
@@ -360,7 +335,6 @@ if "df" in st.session_state:
                     aggfunc=pivot_agg
                 ).reset_index()
                 
-                # Store pivot in session state
                 st.session_state["pivot_results"].append({
                     "name": pivot_name,
                     "df": pivot_df,
@@ -375,11 +349,9 @@ if "df" in st.session_state:
         
         st.markdown("---")
         
-        # Display all stored pivots
         if st.session_state["pivot_results"]:
             st.markdown(f"### 📋 Saved Pivot Tables ({len(st.session_state['pivot_results'])})")
             
-            # Create tabs for each pivot
             pivot_names = [p["name"] for p in st.session_state["pivot_results"]]
             pivot_tabs = st.tabs(pivot_names)
             
@@ -390,10 +362,8 @@ if "df" in st.session_state:
                     
                     st.caption(f"**{pivot_data['agg'].upper()}** of **{pivot_data['value']}** by **{pivot_data['index']}**")
                     
-                    # Display pivot table
                     st.dataframe(pdf, use_container_width=True)
                     
-                    # Visualization
                     chart_theme = dict(
                         plot_bgcolor="#F8FAFC", 
                         paper_bgcolor="#F8FAFC", 
@@ -414,7 +384,6 @@ if "df" in st.session_state:
                     except Exception as e:
                         st.warning(f"Could not generate chart: {e}")
                     
-                    # Export options for this pivot
                     csv = pdf.to_csv(index=False).encode('utf-8')
                     st.download_button(
                         f"⬇️ Download {pivot_data['name']} as CSV",
@@ -426,7 +395,6 @@ if "df" in st.session_state:
             
             st.markdown("---")
             
-            # Delete pivot option
             st.markdown("### 🗑️ Manage Pivots")
             delete_col1, delete_col2 = st.columns([3, 1])
             with delete_col1:
@@ -437,7 +405,6 @@ if "df" in st.session_state:
                 )
             with delete_col2:
                 if st.button("🗑️ Delete Selected", type="secondary", use_container_width=True):
-                    # Find index and remove
                     for idx, p in enumerate(st.session_state["pivot_results"]):
                         if p["name"] == pivot_to_delete:
                             st.session_state["pivot_results"].pop(idx)
@@ -445,7 +412,6 @@ if "df" in st.session_state:
                             st.rerun()
                             break
             
-            # Clear all pivots
             if st.button("🗑️ Clear All Pivots", type="secondary"):
                 st.session_state["pivot_results"] = []
                 st.rerun()
@@ -453,7 +419,6 @@ if "df" in st.session_state:
         else:
             st.info("No pivot tables created yet. Use the form above to create your first pivot.")
 
-    # --- Tab 4: Data Visualize ---
     with tab4:
         st.markdown('<p class="stage-eyebrow">Stage 04</p>', unsafe_allow_html=True)
         st.markdown("### 📈 Data Visualize")
@@ -559,14 +524,12 @@ if "df" in st.session_state:
         except Exception as e:
             st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
 
-    # --- Tab 5: Interpretation ---
     with tab5:
         st.markdown('<p class="stage-eyebrow">Stage 05</p>', unsafe_allow_html=True)
         st.markdown("### 💡 Interpretation")
         if "analyst_notes" not in st.session_state: st.session_state["analyst_notes"] = ""
         st.session_state["analyst_notes"] = st.text_area("Observations:", value=st.session_state["analyst_notes"], height=300)
 
-    # --- Tab 6: Decision Making ---
     with tab6:
         st.markdown('<p class="stage-eyebrow">Stage 06</p>', unsafe_allow_html=True)
         st.markdown("### 🎯 Decision Making")
@@ -596,5 +559,4 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-# Footer
 st.markdown('<p style="text-align:center;color:var(--slate);font-family:\'IBM Plex Mono\',monospace;font-size:11px;margin-top:32px;">INSIGHTIQ · data refinery</p>', unsafe_allow_html=True)
