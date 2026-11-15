@@ -6,6 +6,7 @@ app_code = r'''import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 st.set_page_config(
     page_title="InsightIQ | Data Refinery", 
@@ -294,6 +295,16 @@ if "df" in st.session_state:
                 with fill_col2:
                     if st.button("🩹 Impute Values", use_container_width=True):
                         df_filled = df.copy()
+                        cleaner_map = {"nane": np.nan, "null": np.nan, "NaN": np.nan, "nan": np.nan, "NA": np.nan}
+                        df_filled = df_filled.replace(cleaner_map)
+                        
+                        for col in df_filled.columns:
+                            if df_filled[col].dtype == 'object':
+                                try:
+                                    df_filled[col] = pd.to_numeric(df_filled[col])
+                                except:
+                                    pass
+                                    
                         for col in df_filled.columns:
                             if df_filled[col].isna().any():
                                 if fill_strategy in ("mean", "median"):
@@ -529,4 +540,3 @@ with open("requirements.txt", "w", encoding="utf-8") as f:
 
 with open(".github/workflows/keep_awake.yml", "w", encoding="utf-8") as f:
     f.write(yaml_code)
-    
