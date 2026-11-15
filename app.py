@@ -36,25 +36,28 @@ html, body, [class*="css"] { font-family: 'Outfit', sans-serif; }
     background-size: 24px 24px;
 }
 
-header { background-color: transparent !important; }
+header[data-testid="stHeader"] { 
+    background: transparent !important;
+    z-index: 99999 !important;
+}
+
 [data-testid="stHeaderActionElements"] { display: none; }
 
-.block-container { padding-top: 5rem !important; max-width: 1200px !important; }
+.block-container { padding-top: 6rem !important; max-width: 1200px !important; }
 
 .sticky-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(248, 250, 252, 0.85);
+    height: 64px;
+    background: rgba(248, 250, 252, 0.9);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    z-index: 99998;
+    z-index: 99990;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px 0;
-    padding-left: 60px;
     border-bottom: 1px solid rgba(226, 232, 240, 0.6);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
 }
@@ -70,7 +73,7 @@ header { background-color: transparent !important; }
     -webkit-text-fill-color: transparent;
 }
 
-.hero-minimal { text-align: center; padding: 30px 15px 15px 15px; }
+.hero-minimal { text-align: center; padding: 20px 15px 15px 15px; }
 .hero-minimal h1 { font-weight: 800; font-size: 48px; color: var(--text-dark); margin: 0 0 10px 0; letter-spacing: -1.5px; line-height: 1.1; }
 .hero-minimal .subtitle { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
 
@@ -96,16 +99,19 @@ header { background-color: transparent !important; }
 .pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 12px; margin: 4px; border-radius: 999px; background: rgba(59, 130, 246, 0.1); color: var(--accent-1); font-weight: 600; }
 
 @media (max-width: 768px) {
-    .block-container { padding-top: 4.5rem !important; padding-left: 1rem !important; padding-right: 1rem !important; }
-    .sticky-header { padding-left: 45px; padding-top: 10px; padding-bottom: 10px; }
-    .sticky-title { font-size: 20px; }
-    .hero-minimal h1 { font-size: 32px; }
+    .block-container { padding-top: 5rem !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+    .sticky-header { justify-content: flex-start; padding-left: 15px; }
+    .sticky-title { font-size: 22px !important; }
+    .hero-minimal { padding-top: 10px; }
+    .hero-minimal h1 { font-size: 32px; line-height: 1.2; }
     .hero-minimal .subtitle { font-size: 15px; }
-    .feature-grid { grid-template-columns: 1fr; gap: 12px; padding: 0 10px; }
-    .feature-item { padding: 16px 12px; }
+    .feature-grid { grid-template-columns: 1fr; gap: 12px; padding: 0; }
+    .feature-item { padding: 16px 12px; display: flex; align-items: center; text-align: left; }
+    .feature-item .icon { font-size: 28px; margin-right: 15px; margin-bottom: 0; }
     .stTabs [data-baseweb="tab-list"] { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
     .stTabs [data-baseweb="tab"] { font-size: 11px; padding: 8px 12px; white-space: nowrap; }
     [data-testid="metric-container"] { margin-bottom: 10px; }
+    [data-testid="stMetricValue"] { font-size: 1.8rem; }
 }
 </style>
 
@@ -128,18 +134,24 @@ if "df" not in st.session_state:
     <div class="feature-grid">
         <div class="feature-item">
             <span class="icon">⚡</span>
-            <div class="label">Universal Import</div>
-            <p class="desc">Supports 8 data formats</p>
+            <div>
+                <div class="label">Universal Import</div>
+                <p class="desc">Supports 8 data formats</p>
+            </div>
         </div>
         <div class="feature-item">
             <span class="icon">🧬</span>
-            <div class="label">Smart Cleaning</div>
-            <p class="desc">Handle anomalies instantly</p>
+            <div>
+                <div class="label">Smart Cleaning</div>
+                <p class="desc">Handle anomalies instantly</p>
+            </div>
         </div>
         <div class="feature-item">
             <span class="icon">🔮</span>
-            <div class="label">Visual Analytics</div>
-            <p class="desc">Interactive dashboard views</p>
+            <div>
+                <div class="label">Visual Analytics</div>
+                <p class="desc">Interactive dashboard views</p>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -176,7 +188,7 @@ def load_dataset(uploaded_file):
             return pd.DataFrame.from_records(records)
         else:
             return None
-    except Exception as e:
+    except:
         return None
 
 def commit_action(new_df):
@@ -190,7 +202,6 @@ with st.sidebar:
     st.markdown("### ⚙️ Engine Control")
     st.markdown("".join(f'<span class="pill">{fmt}</span>' for fmt in SUPPORTED_FORMATS), unsafe_allow_html=True)
     st.write("")
-
     uploaded_files = st.file_uploader("Drop datasets here", type=SUPPORTED_FORMATS, accept_multiple_files=True)
 
     if uploaded_files:
@@ -202,14 +213,13 @@ with st.sidebar:
 
         if st.session_state.get("datasets"):
             active_name = st.selectbox("Active Pipeline", list(st.session_state["datasets"].keys()))
-            
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
                 initial_df = st.session_state["datasets"][active_name].copy()
                 st.session_state["df_history"] = [initial_df]
                 st.session_state["history_index"] = 0
                 st.session_state["df"] = initial_df.copy()
-
+            
             df_active = st.session_state["df"]
             st.markdown("---")
             c1, c2 = st.columns(2)
@@ -224,16 +234,15 @@ if "df" in st.session_state:
         col_info, col_undo, col_redo = st.columns([6, 2, 2])
         can_undo = st.session_state["history_index"] > 0
         can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
-        
         with col_info:
             st.markdown(f"**Pipeline:** `{st.session_state['active_name']}` | **Transformations:** `{st.session_state['history_index']}`")
         with col_undo:
-            if st.button("⏪ Undo Previous", disabled=not can_undo, use_container_width=True):
+            if st.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
                 st.session_state["history_index"] -= 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
         with col_redo:
-            if st.button("⏩ Redo Next", disabled=not can_redo, use_container_width=True):
+            if st.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
                 st.session_state["history_index"] += 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
@@ -243,10 +252,10 @@ if "df" in st.session_state:
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "🧬 Data Cleaning", 
-        "⚙️ Data Transformation", 
-        "🔀 Pivot Table Analysis", 
-        "📈 Visualization Dashboard", 
-        "💾 Final Export"
+        "⚙️ Transform", 
+        "🔀 Pivot Analysis", 
+        "📈 Dashboard", 
+        "💾 Export"
     ])
 
     with tab1:
@@ -272,11 +281,11 @@ if "df" in st.session_state:
             st.markdown("#### Resolution Actions")
             a1, a2, a3 = st.columns([1, 1, 2])
             with a1:
-                if st.button("🗑️ Drop Duplicate Rows", use_container_width=True):
+                if st.button("🗑️ Drop Duplicates", use_container_width=True):
                     commit_action(df.drop_duplicates())
                     st.rerun()
             with a2:
-                if st.button("🚫 Drop Missing Values", use_container_width=True):
+                if st.button("🚫 Drop Missing", use_container_width=True):
                     commit_action(df.dropna())
                     st.rerun()
             with a3:
@@ -284,7 +293,7 @@ if "df" in st.session_state:
                 with fill_col1:
                     fill_strategy = st.selectbox("Imputation Method", ["mean", "median", "mode", "0"], label_visibility="collapsed")
                 with fill_col2:
-                    if st.button("🩹 Impute Missing Values", use_container_width=True):
+                    if st.button("🩹 Impute Values", use_container_width=True):
                         df_filled = df.copy()
                         for col in df_filled.columns:
                             if df_filled[col].isna().any():
@@ -315,14 +324,14 @@ if "df" in st.session_state:
             with t1:
                 st.markdown("#### Drop Dimensions")
                 cols_to_drop = st.multiselect("Select columns to remove", df.columns.tolist(), label_visibility="collapsed")
-                if st.button("Execute Column Drop", use_container_width=True) and cols_to_drop:
+                if st.button("Execute Drop", use_container_width=True) and cols_to_drop:
                     commit_action(df.drop(columns=cols_to_drop))
                     st.rerun()
             with t2:
                 st.markdown("#### Rename Dimensions")
                 col_to_rename = st.selectbox("Target column", df.columns.tolist(), label_visibility="collapsed")
-                new_name = st.text_input("New name", placeholder="Enter new dimension name...", label_visibility="collapsed")
-                if st.button("Execute Column Rename", use_container_width=True) and new_name:
+                new_name = st.text_input("New name", placeholder="New name...", label_visibility="collapsed")
+                if st.button("Execute Rename", use_container_width=True) and new_name:
                     commit_action(df.rename(columns={col_to_rename: new_name}))
                     st.rerun()
 
@@ -332,47 +341,40 @@ if "df" in st.session_state:
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
         
-        with st.expander("➕ Generate New Pivot Matrix", expanded=True if not st.session_state["pivot_results"] else False):
+        with st.expander("➕ Generate Matrix", expanded=True if not st.session_state["pivot_results"] else False):
             with st.form("pivot_form"):
                 p_col1, p_col2, p_col3 = st.columns(3)
                 with p_col1: pivot_index = st.selectbox("Index (Rows)", ["None"] + all_cols)
                 with p_col2: pivot_values = st.selectbox("Target Value", ["None"] + numeric_cols)
                 with p_col3: pivot_agg = st.selectbox("Aggregation", ["mean", "sum", "count", "max", "min"])
-                
                 pivot_name = st.text_input("Matrix Identifier", value=f"Analysis Matrix {len(st.session_state['pivot_results']) + 1}")
                 create_pivot = st.form_submit_button("Generate Matrix", type="primary", use_container_width=True)
 
             if create_pivot and pivot_index != "None" and pivot_values != "None":
                 try:
                     pivot_df = pd.pivot_table(df, index=pivot_index, values=pivot_values, aggfunc=pivot_agg).reset_index()
-                    st.session_state["pivot_results"].append({
-                        "name": pivot_name, "df": pivot_df, "index": pivot_index, "value": pivot_values, "agg": pivot_agg
-                    })
+                    st.session_state["pivot_results"].append({"name": pivot_name, "df": pivot_df, "index": pivot_index, "value": pivot_values, "agg": pivot_agg})
                     st.rerun()
-                except Exception as e:
-                    st.error(f"Computation failed: {e}")
+                except:
+                    pass
         
         if st.session_state["pivot_results"]:
             st.markdown("### Computed Matrices")
             pivot_names = [p["name"] for p in st.session_state["pivot_results"]]
             pivot_tabs = st.tabs(pivot_names)
-            
             for i, tab in enumerate(pivot_tabs):
                 with tab:
                     p_data = st.session_state["pivot_results"][i]
                     pdf = p_data["df"]
-                    
                     with st.container(border=True):
                         st.caption(f"**{p_data['agg'].upper()}** of **{p_data['value']}** by **{p_data['index']}**")
                         st.dataframe(pdf, use_container_width=True)
-                        
                         try:
                             fig = px.bar(pdf, x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
                             fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=20, b=20, l=0, r=0))
                             st.plotly_chart(fig, use_container_width=True)
                         except: pass
-                        
-                        if st.button(f"🗑️ Delete {p_data['name']}", key=f"del_{i}"):
+                        if st.button(f"🗑️ Delete Matrix", key=f"del_{i}", use_container_width=True):
                             st.session_state["pivot_results"].pop(i)
                             st.rerun()
 
@@ -384,7 +386,6 @@ if "df" in st.session_state:
 
         with st.container(border=True):
             chart_type = st.selectbox("Visualization Engine", ["Automated Dashboard", "Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram"])
-            
             try:
                 if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
                     c1, c2, c3 = st.columns(3)
@@ -394,12 +395,9 @@ if "df" in st.session_state:
                     
                     color_param = None if color_col == "None" else color_col
                     
-                    if chart_type == "Bar Chart": 
-                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param)
-                    elif chart_type == "Line Chart": 
-                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
-                    elif chart_type == "Scatter Plot": 
-                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
+                    if chart_type == "Bar Chart": fig = px.bar(df, x=x_axis, y=y_axis, color=color_param)
+                    elif chart_type == "Line Chart": fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
+                    elif chart_type == "Scatter Plot": fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
                     
                     fig.update_layout(**chart_theme)
                     st.plotly_chart(fig, use_container_width=True)
@@ -436,15 +434,13 @@ if "df" in st.session_state:
                     fig = px.histogram(df, x=target_col, color_discrete_sequence=["#3B82F6"])
                     fig.update_layout(**chart_theme)
                     st.plotly_chart(fig, use_container_width=True)
-                    
                     st.markdown("#### Metric Summary")
                     h_col1, h_col2, h_col3 = st.columns(3)
                     h_col1.metric("Mean Average", f"{df[target_col].mean():.2f}")
                     h_col2.metric("Median Value", f"{df[target_col].median():.2f}")
                     h_col3.metric("Maximum Value", f"{df[target_col].max():.2f}")
-
-            except Exception as e:
-                st.error("Visualization rendering failed. Check dimension compatibility.")
+            except:
+                pass
 
     with tab5:
         df = st.session_state["df"]
@@ -453,7 +449,6 @@ if "df" in st.session_state:
             m1, m2 = st.columns(2)
             m1.metric("Total Matrix Rows", f"{df.shape[0]:,}")
             m2.metric("Total Matrix Columns", df.shape[1])
-            
             st.write("")
             e1, e2 = st.columns(2)
             with e1:
@@ -471,20 +466,14 @@ bot_code = r'''import datetime
 from playwright.sync_api import sync_playwright
 
 def run(playwright):
-    print(f"[{datetime.datetime.now()}] Booting up the awake bot...")
     browser = playwright.chromium.launch(headless=True)
     page = browser.new_page()
-    
-    # ⚠️ REPLACE THIS WITH YOUR INSIGHTIQ URL BEFORE RUNNING
-    target_url = "https://your-app-name.streamlit.app/"  
-    
+    target_url = "https://your-app-name.streamlit.app/"
     try:
-        print(f"[{datetime.datetime.now()}] Waking up {target_url}...")
         page.goto(target_url, wait_until="networkidle") 
         page.wait_for_timeout(15000) 
-        print(f"[{datetime.datetime.now()}] Mission accomplished. InsightIQ is awake.")
     except Exception as e:
-        print(f"[{datetime.datetime.now()}] Error connecting to the app: {e}")
+        pass
     finally:
         browser.close()
 
