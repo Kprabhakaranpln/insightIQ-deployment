@@ -226,12 +226,12 @@ if "df" in st.session_state:
         with col_info:
             st.markdown(f"**Pipeline:** `{st.session_state['active_name']}` | **Transformations:** `{st.session_state['history_index']}`")
         with col_undo:
-            if st.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
+            if st.button("⏪ Undo Previous", disabled=not can_undo, use_container_width=True):
                 st.session_state["history_index"] -= 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
         with col_redo:
-            if st.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
+            if st.button("⏩ Redo Next", disabled=not can_redo, use_container_width=True):
                 st.session_state["history_index"] += 1
                 st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
                 st.rerun()
@@ -239,7 +239,13 @@ if "df" in st.session_state:
     with st.expander("👁️ View Live Dataset Preview", expanded=False):
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🧬 Clean", "⚙️ Transform", "🔀 Pivot", "📈 Dashboard", "💾 Export"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "🧬 Data Cleaning", 
+        "⚙️ Data Transformation", 
+        "🔀 Pivot Table Analysis", 
+        "📈 Visualization Dashboard", 
+        "💾 Final Export"
+    ])
 
     with tab1:
         df = st.session_state["df"]
@@ -264,19 +270,19 @@ if "df" in st.session_state:
             st.markdown("#### Resolution Actions")
             a1, a2, a3 = st.columns([1, 1, 2])
             with a1:
-                if st.button("🗑️ Drop Duplicates", use_container_width=True):
+                if st.button("🗑️ Drop Duplicate Rows", use_container_width=True):
                     commit_action(df.drop_duplicates())
                     st.rerun()
             with a2:
-                if st.button("🚫 Drop NaNs", use_container_width=True):
+                if st.button("🚫 Drop Missing Values", use_container_width=True):
                     commit_action(df.dropna())
                     st.rerun()
             with a3:
                 fill_col1, fill_col2 = st.columns([1, 1])
                 with fill_col1:
-                    fill_strategy = st.selectbox("Method", ["mean", "median", "mode", "0"], label_visibility="collapsed")
+                    fill_strategy = st.selectbox("Imputation Method", ["mean", "median", "mode", "0"], label_visibility="collapsed")
                 with fill_col2:
-                    if st.button("🩹 Impute Missing", use_container_width=True):
+                    if st.button("🩹 Impute Missing Values", use_container_width=True):
                         df_filled = df.copy()
                         for col in df_filled.columns:
                             if df_filled[col].isna().any():
@@ -298,14 +304,14 @@ if "df" in st.session_state:
             with t1:
                 st.markdown("#### Drop Dimensions")
                 cols_to_drop = st.multiselect("Select columns to remove", df.columns.tolist(), label_visibility="collapsed")
-                if st.button("Execute Drop", use_container_width=True) and cols_to_drop:
+                if st.button("Execute Column Drop", use_container_width=True) and cols_to_drop:
                     commit_action(df.drop(columns=cols_to_drop))
                     st.rerun()
             with t2:
                 st.markdown("#### Rename Dimensions")
                 col_to_rename = st.selectbox("Target column", df.columns.tolist(), label_visibility="collapsed")
                 new_name = st.text_input("New name", placeholder="Enter new dimension name...", label_visibility="collapsed")
-                if st.button("Execute Rename", use_container_width=True) and new_name:
+                if st.button("Execute Column Rename", use_container_width=True) and new_name:
                     commit_action(df.rename(columns={col_to_rename: new_name}))
                     st.rerun()
 
@@ -315,7 +321,7 @@ if "df" in st.session_state:
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
         
-        with st.expander("➕ Generate New Matrix", expanded=True if not st.session_state["pivot_results"] else False):
+        with st.expander("➕ Generate New Pivot Matrix", expanded=True if not st.session_state["pivot_results"] else False):
             with st.form("pivot_form"):
                 p_col1, p_col2, p_col3 = st.columns(3)
                 with p_col1: pivot_index = st.selectbox("Index (Rows)", ["None"] + all_cols)
@@ -422,9 +428,9 @@ if "df" in st.session_state:
                     
                     st.markdown("#### Metric Summary")
                     h_col1, h_col2, h_col3 = st.columns(3)
-                    h_col1.metric("Mean", f"{df[target_col].mean():.2f}")
-                    h_col2.metric("Median", f"{df[target_col].median():.2f}")
-                    h_col3.metric("Max", f"{df[target_col].max():.2f}")
+                    h_col1.metric("Mean Average", f"{df[target_col].mean():.2f}")
+                    h_col2.metric("Median Value", f"{df[target_col].median():.2f}")
+                    h_col3.metric("Maximum Value", f"{df[target_col].max():.2f}")
 
             except Exception as e:
                 st.error("Visualization rendering failed. Check dimension compatibility.")
@@ -432,19 +438,19 @@ if "df" in st.session_state:
     with tab5:
         df = st.session_state["df"]
         with st.container(border=True):
-            st.markdown("### Export Payload")
+            st.markdown("### Export Final Payload")
             m1, m2 = st.columns(2)
-            m1.metric("Final Matrix Rows", f"{df.shape[0]:,}")
-            m2.metric("Final Matrix Columns", df.shape[1])
+            m1.metric("Total Matrix Rows", f"{df.shape[0]:,}")
+            m2.metric("Total Matrix Columns", df.shape[1])
             
             st.write("")
             e1, e2 = st.columns(2)
             with e1:
-                st.download_button("Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_payload.csv", mime="text/csv", use_container_width=True)
+                st.download_button("Download CSV File", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_payload.csv", mime="text/csv", use_container_width=True)
             with e2:
                 buffer = io.BytesIO()
                 df.to_excel(buffer, index=False, engine="openpyxl")
-                st.download_button("Download Excel", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+                st.download_button("Download Excel File", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
 else:
     st.empty()
