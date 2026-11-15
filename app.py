@@ -1,4 +1,8 @@
-import io
+import os
+
+os.makedirs(".github/workflows", exist_ok=True)
+
+app_code = r'''import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -90,8 +94,6 @@ header { background-color: transparent !important; }
 [data-testid="metric-container"] { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; backdrop-filter: blur(10px); }
 
 .pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 12px; margin: 4px; border-radius: 999px; background: rgba(59, 130, 246, 0.1); color: var(--accent-1); font-weight: 600; }
-
-.control-panel { background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
 @media (max-width: 768px) {
     .block-container { padding-top: 4.5rem !important; padding-left: 1rem !important; padding-right: 1rem !important; }
@@ -463,3 +465,79 @@ if "df" in st.session_state:
 
 else:
     st.empty()
+'''
+
+bot_code = r'''import datetime
+from playwright.sync_api import sync_playwright
+
+def run(playwright):
+    print(f"[{datetime.datetime.now()}] Booting up the awake bot...")
+    browser = playwright.chromium.launch(headless=True)
+    page = browser.new_page()
+    
+    # ⚠️ REPLACE THIS WITH YOUR INSIGHTIQ URL BEFORE RUNNING
+    target_url = "https://your-app-name.streamlit.app/"  
+    
+    try:
+        print(f"[{datetime.datetime.now()}] Waking up {target_url}...")
+        page.goto(target_url, wait_until="networkidle") 
+        page.wait_for_timeout(15000) 
+        print(f"[{datetime.datetime.now()}] Mission accomplished. InsightIQ is awake.")
+    except Exception as e:
+        print(f"[{datetime.datetime.now()}] Error connecting to the app: {e}")
+    finally:
+        browser.close()
+
+with sync_playwright() as p:
+    run(p)
+'''
+
+req_code = r'''streamlit
+pandas
+plotly
+openpyxl
+fastavro
+xlrd
+playwright
+'''
+
+yaml_code = r'''name: Keep Streamlit Awake
+
+on:
+  schedule:
+    - cron: '0 */10 * * *'
+  workflow_dispatch: 
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
+          
+      - name: Run the bot
+        run: python keep_awake.py
+'''
+
+with open("app.py", "w", encoding="utf-8") as f:
+    f.write(app_code)
+
+with open("keep_awake.py", "w", encoding="utf-8") as f:
+    f.write(bot_code)
+
+with open("requirements.txt", "w", encoding="utf-8") as f:
+    f.write(req_code)
+
+with open(".github/workflows/keep_awake.yml", "w", encoding="utf-8") as f:
+    f.write(yaml_code)
