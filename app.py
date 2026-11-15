@@ -229,7 +229,6 @@ with st.sidebar:
         st.caption("Awaiting data ingestion...")
 
 if "df" in st.session_state:
-    
     with st.container(border=True):
         col_info, col_undo, col_redo = st.columns([6, 2, 2])
         can_undo = st.session_state["history_index"] > 0
