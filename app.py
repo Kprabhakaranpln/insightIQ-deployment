@@ -286,14 +286,23 @@ if "df" in st.session_state:
                         df_filled = df.copy()
                         for col in df_filled.columns:
                             if df_filled[col].isna().any():
-                                if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
-                                    val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
-                                    df_filled[col] = df_filled[col].fillna(val)
+                                if fill_strategy in ("mean", "median"):
+                                    if pd.api.types.is_numeric_dtype(df_filled[col]):
+                                        val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
+                                        df_filled[col] = df_filled[col].fillna(val)
+                                    else:
+                                        mode_vals = df_filled[col].mode()
+                                        val = mode_vals.iloc[0] if not mode_vals.empty else "Unknown"
+                                        df_filled[col] = df_filled[col].fillna(val)
                                 elif fill_strategy == "mode":
                                     mode_vals = df_filled[col].mode()
-                                    df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
+                                    val = mode_vals.iloc[0] if not mode_vals.empty else "Unknown"
+                                    df_filled[col] = df_filled[col].fillna(val)
                                 elif fill_strategy == "0":
-                                    df_filled[col] = df_filled[col].fillna(0)
+                                    if pd.api.types.is_numeric_dtype(df_filled[col]):
+                                        df_filled[col] = df_filled[col].fillna(0)
+                                    else:
+                                        df_filled[col] = df_filled[col].fillna("0")
                         commit_action(df_filled)
                         st.rerun()
 
