@@ -80,7 +80,7 @@ section[data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px 
 .stTabs [data-baseweb="tab"] { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.02em; color: var(--slate); padding: 8px 16px; border-radius: 6px 6px 0 0; }
 .stTabs [aria-selected="true"] { color: var(--ink) !important; border-bottom: 2px solid var(--teal) !important; font-weight: 600; background: transparent !important; }
 
-.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: #FFFFFF; color: var(--ink); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; }
+.stButton > button { font-family: 'IBM Plex Sans', sans-serif; border: 1px solid var(--line); background-color: #FFFFFF; color: var(--ink); border-radius: 6px; font-weight: 500; font-size: 13px; transition: all 0.15s ease; width: 100%; }
 .stButton > button:hover { background-color: var(--ink); color: #FFFFFF; border-color: var(--ink); }
 
 [data-testid="metric-container"] { background: #FFFFFF; border: 1px solid var(--line); border-radius: 8px; padding: 12px; box-shadow: none; }
@@ -89,6 +89,16 @@ footer, #MainMenu { visibility: hidden; }
 .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22C55E; margin-right: 6px; }
 .status-text { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--slate); }
 .pill { display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.04em; padding: 2px 10px; margin: 2px 3px 2px 0; border: 1px solid var(--line); border-radius: 999px; color: var(--slate); background: #FFFFFF; }
+
+@media (max-width: 768px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .hero-minimal h1 { font-size: 28px; }
+    .hero-minimal .subtitle { font-size: 14px; padding: 0 10px; }
+    .sticky-title { font-size: 20px; }
+    .emoji-icon { font-size: 20px; }
+    .sticky-header { padding-left: 40px; }
+    .stTabs [data-baseweb="tab"] { font-size: 11px; padding: 6px 10px; }
+}
 </style>
 
 <div class="sticky-header">
@@ -251,16 +261,16 @@ if "df" in st.session_state:
         st.markdown("#### Actions")
         a1, a2, a3 = st.columns(3)
         with a1:
-            if st.button("🗑️ Drop duplicate rows"):
+            if st.button("🗑️ Drop duplicate rows", use_container_width=True):
                 commit_action(df.drop_duplicates())
                 st.rerun()
         with a2:
-            if st.button("🚫 Drop rows with missing values"):
+            if st.button("🚫 Drop missing value rows", use_container_width=True):
                 commit_action(df.dropna())
                 st.rerun()
         with a3:
-            fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"])
-            if st.button("🩹 Fill missing values"):
+            fill_strategy = st.selectbox("Fill missing with", ["mean", "median", "mode", "0"], label_visibility="collapsed")
+            if st.button("🩹 Fill missing", use_container_width=True):
                 df_filled = df.copy()
                 for col in df_filled.columns:
                     if df_filled[col].isna().any():
@@ -284,13 +294,13 @@ if "df" in st.session_state:
         t1, t2 = st.columns(2)
         with t1:
             cols_to_drop = st.multiselect("Drop columns", df.columns.tolist())
-            if st.button("Drop selected") and cols_to_drop:
+            if st.button("Drop selected", use_container_width=True) and cols_to_drop:
                 commit_action(df.drop(columns=cols_to_drop))
                 st.rerun()
         with t2:
             col_to_rename = st.selectbox("Rename column", df.columns.tolist())
             new_name = st.text_input("New name")
-            if st.button("Rename") and new_name:
+            if st.button("Rename", use_container_width=True) and new_name:
                 commit_action(df.rename(columns={col_to_rename: new_name}))
                 st.rerun()
         st.markdown("#### Data Preview")
@@ -324,7 +334,7 @@ if "df" in st.session_state:
                 pivot_agg = st.selectbox("Aggregation Function", ["mean", "sum", "count", "max", "min"])
             
             pivot_name = st.text_input("Pivot Table Name (optional)", value=f"Pivot {len(st.session_state['pivot_results']) + 1}")
-            create_pivot = st.form_submit_button("➕ Create Pivot Table", type="primary")
+            create_pivot = st.form_submit_button("➕ Create Pivot Table", type="primary", use_container_width=True)
 
         if create_pivot and pivot_index != "None" and pivot_values != "None":
             try:
@@ -412,7 +422,7 @@ if "df" in st.session_state:
                             st.rerun()
                             break
             
-            if st.button("🗑️ Clear All Pivots", type="secondary"):
+            if st.button("🗑️ Clear All Pivots", type="secondary", use_container_width=True):
                 st.session_state["pivot_results"] = []
                 st.rerun()
                 
@@ -442,45 +452,38 @@ if "df" in st.session_state:
                 with c3: color_col = st.selectbox("Color by (Optional)", ["None"] + all_cols)
                 
                 color_param = None if color_col == "None" else color_col
-                chart_col, data_col = st.columns([3, 1])
                 
-                with chart_col:
-                    if chart_type == "Bar Chart": 
-                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
-                        fig.update_traces(textposition="outside", cliponaxis=False)
-                    elif chart_type == "Line Chart": 
-                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
-                    elif chart_type == "Scatter Plot": 
-                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
-                    
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
+                if chart_type == "Bar Chart": 
+                    fig = px.bar(df, x=x_axis, y=y_axis, color=color_param, text_auto='.2s')
+                    fig.update_traces(textposition="outside", cliponaxis=False)
+                elif chart_type == "Line Chart": 
+                    fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
+                elif chart_type == "Scatter Plot": 
+                    fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
                 
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
-                    st.write("**Top 5 Highest Values:**")
-                    top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
-                    st.dataframe(top_data, hide_index=True, use_container_width=True)
+                fig.update_layout(**chart_theme)
+                st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown("#### 📝 Data Summary")
+                st.caption(f"Analyzing **{y_axis}** by **{x_axis}**")
+                st.write("**Top 5 Highest Values:**")
+                top_data = df[[x_axis, y_axis]].sort_values(by=y_axis, ascending=False).head(5)
+                st.dataframe(top_data, hide_index=True, use_container_width=True)
 
             elif chart_type == "Pie Chart":
                 c1, c2 = st.columns(2)
                 with c1: names = st.selectbox("Categories (Labels)", all_cols)
                 with c2: values = st.selectbox("Values", numeric_cols)
                 
-                chart_col, data_col = st.columns([3, 1])
-                
-                with chart_col:
-                    fig = px.pie(df, names=names, values=values)
-                    fig.update_traces(textinfo='label+percent+value', textposition='inside')
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
+                fig = px.pie(df, names=names, values=values)
+                fig.update_traces(textinfo='label+percent+value', textposition='inside')
+                fig.update_layout(**chart_theme)
+                st.plotly_chart(fig, use_container_width=True)
                     
-                with data_col:
-                    st.markdown("#### 📝 Data Summary")
-                    st.write("**Category Breakdown:**")
-                    pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
-                    st.dataframe(pie_data, hide_index=True, use_container_width=True)
+                st.markdown("#### 📝 Data Summary")
+                st.write("**Category Breakdown:**")
+                pie_data = df.groupby(names)[values].sum().reset_index().sort_values(by=values, ascending=False)
+                st.dataframe(pie_data, hide_index=True, use_container_width=True)
 
             elif chart_type == "Dashboard View":
                 st.markdown("#### 🚀 Quick Insights Dashboard")
@@ -509,17 +512,16 @@ if "df" in st.session_state:
                     
             elif chart_type == "Histogram":
                 target_col = st.selectbox("Select Column to Analyze", numeric_cols)
-                chart_col, data_col = st.columns([3, 1])
                 
-                with chart_col:
-                    fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
-                    fig.update_layout(**chart_theme)
-                    st.plotly_chart(fig, use_container_width=True)
-                with data_col:
-                    st.markdown("#### 📝 Statistics")
-                    st.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
-                    st.metric("Median", f"{df[target_col].median():.2f}")
-                    st.metric("Max Value", f"{df[target_col].max():.2f}")
+                fig = px.histogram(df, x=target_col, text_auto=True, color_discrete_sequence=["#2563EB"])
+                fig.update_layout(**chart_theme)
+                st.plotly_chart(fig, use_container_width=True)
+                
+                st.markdown("#### 📝 Statistics")
+                h_col1, h_col2, h_col3 = st.columns(3)
+                h_col1.metric("Average (Mean)", f"{df[target_col].mean():.2f}")
+                h_col2.metric("Median", f"{df[target_col].median():.2f}")
+                h_col3.metric("Max Value", f"{df[target_col].max():.2f}")
 
         except Exception as e:
             st.error(f"Could not generate {chart_type}. Please ensure your data types are compatible. Error: {e}")
