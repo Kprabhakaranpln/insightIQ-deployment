@@ -24,9 +24,7 @@ st.markdown("""
     --card-bg: rgba(255, 255, 255, 0.85);
 }
 
-html, body, [class*="css"] { 
-    font-family: 'Outfit', sans-serif; 
-}
+html, body, [class*="css"] { font-family: 'Outfit', sans-serif; }
 
 .stApp { 
     background-color: var(--bg-main);
@@ -37,10 +35,7 @@ html, body, [class*="css"] {
 header { background-color: transparent !important; }
 [data-testid="stHeaderActionElements"] { display: none; }
 
-.block-container { 
-    padding-top: 5rem !important; 
-    max-width: 1200px !important; 
-}
+.block-container { padding-top: 5rem !important; max-width: 1200px !important; }
 
 .sticky-header {
     position: fixed;
@@ -71,112 +66,33 @@ header { background-color: transparent !important; }
     -webkit-text-fill-color: transparent;
 }
 
-.hero-minimal { 
-    text-align: center; 
-    padding: 30px 15px 15px 15px; 
-}
-.hero-minimal h1 { 
-    font-family: 'Outfit', sans-serif; 
-    font-weight: 800; 
-    font-size: 48px; 
-    color: var(--text-dark); 
-    margin: 0 0 10px 0; 
-    letter-spacing: -1.5px;
-    line-height: 1.1;
-}
-.hero-minimal .subtitle { 
-    font-size: 18px; 
-    color: var(--text-muted); 
-    max-width: 600px; 
-    margin: 0 auto; 
-}
+.hero-minimal { text-align: center; padding: 30px 15px 15px 15px; }
+.hero-minimal h1 { font-weight: 800; font-size: 48px; color: var(--text-dark); margin: 0 0 10px 0; letter-spacing: -1.5px; line-height: 1.1; }
+.hero-minimal .subtitle { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
 
-.feature-grid { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 20px; 
-    max-width: 900px; 
-    margin: 20px auto 0 auto; 
-    padding: 0 20px; 
-}
-.feature-item { 
-    background: var(--card-bg); 
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-light); 
-    border-radius: 16px; 
-    padding: 24px 16px; 
-    text-align: center; 
-    transition: transform 0.2s ease, box-shadow 0.2s ease; 
-}
-.feature-item:hover { 
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -8px rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.3);
-}
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 20px auto 0 auto; padding: 0 20px; }
+.feature-item { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border-light); border-radius: 16px; padding: 24px 16px; text-align: center; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.feature-item:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); }
 .feature-item .icon { font-size: 32px; display: block; margin-bottom: 8px; }
 .feature-item .label { font-size: 16px; font-weight: 700; color: var(--text-dark); }
 .feature-item .desc { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-.empty-state { 
-    border: 2px dashed var(--border-light); 
-    border-radius: 16px; 
-    padding: 60px 24px; 
-    text-align: center; 
-    background: var(--card-bg); 
-    backdrop-filter: blur(10px);
-}
+.empty-state { border: 2px dashed var(--border-light); border-radius: 16px; padding: 60px 24px; text-align: center; background: var(--card-bg); backdrop-filter: blur(10px); }
 .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0 0 8px 0; }
 
-.stTabs [data-baseweb="tab-list"] { 
-    gap: 8px; 
-    border-bottom: 2px solid var(--border-light); 
-    background: transparent; 
-}
-.stTabs [data-baseweb="tab"] { 
-    font-family: 'JetBrains Mono', monospace; 
-    font-size: 13px; 
-    color: var(--text-muted); 
-    padding: 12px 16px; 
-}
-.stTabs [aria-selected="true"] { 
-    color: var(--accent-1) !important; 
-    border-bottom: 3px solid var(--accent-1) !important; 
-    font-weight: 700; 
-}
+.stTabs [data-baseweb="tab-list"] { gap: 8px; border-bottom: 2px solid var(--border-light); background: transparent; }
+.stTabs [data-baseweb="tab"] { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); padding: 12px 16px; }
+.stTabs [aria-selected="true"] { color: var(--accent-1) !important; border-bottom: 3px solid var(--accent-1) !important; font-weight: 700; }
 
-.stButton > button { 
-    font-family: 'Outfit', sans-serif; 
-    font-weight: 600; 
-    border-radius: 8px; 
-    transition: all 0.2s ease;
-    width: 100%;
-}
-.stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    border: none;
-}
+.stButton > button { font-family: 'Outfit', sans-serif; font-weight: 600; border-radius: 8px; transition: all 0.2s ease; width: 100%; }
+.stButton > button[kind="primary"] { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); border: none; }
 
-[data-testid="metric-container"] { 
-    background: var(--card-bg); 
-    border: 1px solid var(--border-light); 
-    border-radius: 12px; 
-    padding: 16px; 
-    backdrop-filter: blur(10px);
-}
+[data-testid="metric-container"] { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; backdrop-filter: blur(10px); }
 
-.pill { 
-    display: inline-block; 
-    font-family: 'JetBrains Mono', monospace; 
-    font-size: 11px; 
-    padding: 4px 12px; 
-    margin: 4px; 
-    border-radius: 999px; 
-    background: rgba(59, 130, 246, 0.1); 
-    color: var(--accent-1);
-    font-weight: 600;
-}
+.pill { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 12px; margin: 4px; border-radius: 999px; background: rgba(59, 130, 246, 0.1); color: var(--accent-1); font-weight: 600; }
 
-/* Mobile Responsiveness Rules */
+.control-panel { background: #FFFFFF; border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
 @media (max-width: 768px) {
     .block-container { padding-top: 4.5rem !important; padding-left: 1rem !important; padding-right: 1rem !important; }
     .sticky-header { padding-left: 45px; padding-top: 10px; padding-bottom: 10px; }
@@ -201,40 +117,41 @@ header { background-color: transparent !important; }
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
-st.markdown("""
-<div class="hero-minimal">
-    <h1>Data Refinery, Reimagined.</h1>
-    <p class="subtitle">Upload raw datasets and extract visual insights instantly on any device.</p>
-</div>
-<div class="feature-grid">
-    <div class="feature-item">
-        <span class="icon">⚡</span>
-        <div class="label">Universal Import</div>
-        <p class="desc">Supports 8 data formats</p>
+if "df" not in st.session_state:
+    st.markdown("""
+    <div class="hero-minimal">
+        <h1>Data Refinery, Reimagined.</h1>
+        <p class="subtitle">Upload raw datasets and extract visual insights instantly on any device.</p>
     </div>
-    <div class="feature-item">
-        <span class="icon">🧬</span>
-        <div class="label">Smart Cleaning</div>
-        <p class="desc">Handle anomalies instantly</p>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <span class="icon">⚡</span>
+            <div class="label">Universal Import</div>
+            <p class="desc">Supports 8 data formats</p>
+        </div>
+        <div class="feature-item">
+            <span class="icon">🧬</span>
+            <div class="label">Smart Cleaning</div>
+            <p class="desc">Handle anomalies instantly</p>
+        </div>
+        <div class="feature-item">
+            <span class="icon">🔮</span>
+            <div class="label">Visual Analytics</div>
+            <p class="desc">Interactive dashboard views</p>
+        </div>
     </div>
-    <div class="feature-item">
-        <span class="icon">🔮</span>
-        <div class="label">Visual Analytics</div>
-        <p class="desc">Interactive dashboard views</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(
-    f"""
-    <div style="text-align:center; margin: 20px 0;">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; margin-right: 8px; box-shadow: 0 0 8px #3B82F6;"></span>
-        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); font-weight: 500;">Engine Online · {len(SUPPORTED_FORMATS)} Formats Supported</span>
-    </div>
-    <hr style="border:none; border-top: 1px solid var(--border-light); margin-bottom: 30px;">
-    """,
-    unsafe_allow_html=True,
-)
+    """, unsafe_allow_html=True)
+    
+    st.markdown(
+        f"""
+        <div style="text-align:center; margin: 20px 0;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; margin-right: 8px; box-shadow: 0 0 8px #3B82F6;"></span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); font-weight: 500;">Engine Online · {len(SUPPORTED_FORMATS)} Formats Supported</span>
+        </div>
+        <hr style="border:none; border-top: 1px solid var(--border-light); margin-bottom: 30px;">
+        """,
+        unsafe_allow_html=True,
+    )
 
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
@@ -301,92 +218,96 @@ with st.sidebar:
 
 if "df" in st.session_state:
     
-    toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([12, 4, 4])
-    
-    with toolbar_col1:
-        st.markdown(f"**Dataset:** `{st.session_state['active_name']}`  |  **Steps:** `{st.session_state['history_index']}`")
-    
-    can_undo = st.session_state["history_index"] > 0
-    can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
-    
-    with toolbar_col2:
-        if st.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
-            st.session_state["history_index"] -= 1
-            st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
-            st.rerun()
-    with toolbar_col3:
-        if st.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
-            st.session_state["history_index"] += 1
-            st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
-            st.rerun()
-            
-    st.markdown("---")
+    with st.container(border=True):
+        col_info, col_undo, col_redo = st.columns([6, 2, 2])
+        can_undo = st.session_state["history_index"] > 0
+        can_redo = st.session_state["history_index"] < len(st.session_state["df_history"]) - 1
+        
+        with col_info:
+            st.markdown(f"**Pipeline:** `{st.session_state['active_name']}` | **Transformations:** `{st.session_state['history_index']}`")
+        with col_undo:
+            if st.button("⏪ Undo", disabled=not can_undo, use_container_width=True):
+                st.session_state["history_index"] -= 1
+                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+                st.rerun()
+        with col_redo:
+            if st.button("⏩ Redo", disabled=not can_redo, use_container_width=True):
+                st.session_state["history_index"] += 1
+                st.session_state["df"] = st.session_state["df_history"][st.session_state["history_index"]].copy()
+                st.rerun()
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🧬 Clean", "⚙️ Transform", "🔀 Pivot", "📈 Dashboard", "💾 Export"
-    ])
+    with st.expander("👁️ View Live Dataset Preview", expanded=False):
+        st.dataframe(st.session_state["df"].head(100), use_container_width=True)
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🧬 Clean", "⚙️ Transform", "🔀 Pivot", "📈 Dashboard", "💾 Export"])
 
     with tab1:
         df = st.session_state["df"]
-        colA, colB = st.columns(2)
-        with colA:
-            missing = df.isna().sum()
-            missing = missing[missing > 0]
-            if missing.empty: 
-                st.success("Zero missing values.")
-            else: 
-                st.dataframe(missing.rename("Missing Count"), use_container_width=True)
-        with colB:
-            st.metric("Duplicate Rows Detected", int(df.duplicated().sum()))
+        with st.container(border=True):
+            st.markdown("#### Anomaly Detection")
+            colA, colB = st.columns(2)
+            with colA:
+                missing = df.isna().sum()
+                missing = missing[missing > 0]
+                if missing.empty: 
+                    st.success("✓ Zero missing values detected.")
+                else: 
+                    st.dataframe(missing.rename("Missing Count"), use_container_width=True)
+            with colB:
+                dupes = int(df.duplicated().sum())
+                if dupes == 0:
+                    st.success("✓ Zero duplicate rows detected.")
+                else:
+                    st.warning(f"⚠️ {dupes} duplicate rows detected.")
 
-        st.markdown("#### Rectification Actions")
-        a1, a2, a3 = st.columns([1, 1, 2])
-        with a1:
-            if st.button("🗑️ Drop Duplicates", use_container_width=True):
-                commit_action(df.drop_duplicates())
-                st.rerun()
-        with a2:
-            if st.button("🚫 Drop NaNs", use_container_width=True):
-                commit_action(df.dropna())
-                st.rerun()
-        with a3:
-            fill_col1, fill_col2 = st.columns([1, 1])
-            with fill_col1:
-                fill_strategy = st.selectbox("Method", ["mean", "median", "mode", "0"], label_visibility="collapsed")
-            with fill_col2:
-                if st.button("🩹 Impute Missing", use_container_width=True):
-                    df_filled = df.copy()
-                    for col in df_filled.columns:
-                        if df_filled[col].isna().any():
-                            if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
-                                val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
-                                df_filled[col] = df_filled[col].fillna(val)
-                            elif fill_strategy == "mode":
-                                mode_vals = df_filled[col].mode()
-                                df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
-                            elif fill_strategy == "0":
-                                df_filled[col] = df_filled[col].fillna(0)
-                    commit_action(df_filled)
+        with st.container(border=True):
+            st.markdown("#### Resolution Actions")
+            a1, a2, a3 = st.columns([1, 1, 2])
+            with a1:
+                if st.button("🗑️ Drop Duplicates", use_container_width=True):
+                    commit_action(df.drop_duplicates())
                     st.rerun()
-        
-        st.markdown("#### Live Preview")
-        st.dataframe(st.session_state["df"].head(50), use_container_width=True)
+            with a2:
+                if st.button("🚫 Drop NaNs", use_container_width=True):
+                    commit_action(df.dropna())
+                    st.rerun()
+            with a3:
+                fill_col1, fill_col2 = st.columns([1, 1])
+                with fill_col1:
+                    fill_strategy = st.selectbox("Method", ["mean", "median", "mode", "0"], label_visibility="collapsed")
+                with fill_col2:
+                    if st.button("🩹 Impute Missing", use_container_width=True):
+                        df_filled = df.copy()
+                        for col in df_filled.columns:
+                            if df_filled[col].isna().any():
+                                if fill_strategy in ("mean", "median") and pd.api.types.is_numeric_dtype(df_filled[col]):
+                                    val = df_filled[col].mean() if fill_strategy == "mean" else df_filled[col].median()
+                                    df_filled[col] = df_filled[col].fillna(val)
+                                elif fill_strategy == "mode":
+                                    mode_vals = df_filled[col].mode()
+                                    df_filled[col] = df_filled[col].fillna(mode_vals.iloc[0] if not mode_vals.empty else "")
+                                elif fill_strategy == "0":
+                                    df_filled[col] = df_filled[col].fillna(0)
+                        commit_action(df_filled)
+                        st.rerun()
 
     with tab2:
         df = st.session_state["df"]
-        t1, t2 = st.columns(2)
-        with t1:
-            cols_to_drop = st.multiselect("Select columns to isolate/drop", df.columns.tolist())
-            if st.button("Drop Selected Columns", use_container_width=True) and cols_to_drop:
-                commit_action(df.drop(columns=cols_to_drop))
-                st.rerun()
-        with t2:
-            col_to_rename = st.selectbox("Target column for renaming", df.columns.tolist())
-            new_name = st.text_input("Input new dimension name")
-            if st.button("Apply New Name", use_container_width=True) and new_name:
-                commit_action(df.rename(columns={col_to_rename: new_name}))
-                st.rerun()
-        st.dataframe(st.session_state["df"].head(50), use_container_width=True)
+        with st.container(border=True):
+            t1, t2 = st.columns(2)
+            with t1:
+                st.markdown("#### Drop Dimensions")
+                cols_to_drop = st.multiselect("Select columns to remove", df.columns.tolist(), label_visibility="collapsed")
+                if st.button("Execute Drop", use_container_width=True) and cols_to_drop:
+                    commit_action(df.drop(columns=cols_to_drop))
+                    st.rerun()
+            with t2:
+                st.markdown("#### Rename Dimensions")
+                col_to_rename = st.selectbox("Target column", df.columns.tolist(), label_visibility="collapsed")
+                new_name = st.text_input("New name", placeholder="Enter new dimension name...", label_visibility="collapsed")
+                if st.button("Execute Rename", use_container_width=True) and new_name:
+                    commit_action(df.rename(columns={col_to_rename: new_name}))
+                    st.rerun()
 
     with tab3:
         df = st.session_state["df"]
@@ -394,29 +315,28 @@ if "df" in st.session_state:
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         all_cols = df.columns.tolist()
         
-        with st.form("pivot_form"):
-            st.markdown("##### Matrix Generator")
-            p_col1, p_col2, p_col3 = st.columns(3)
-            with p_col1: pivot_index = st.selectbox("Index (Rows)", ["None"] + all_cols)
-            with p_col2: pivot_values = st.selectbox("Target Value", ["None"] + numeric_cols)
-            with p_col3: pivot_agg = st.selectbox("Aggregation", ["mean", "sum", "count", "max", "min"])
-            
-            pivot_name = st.text_input("Matrix Identifier", value=f"Analysis Matrix {len(st.session_state['pivot_results']) + 1}")
-            create_pivot = st.form_submit_button("Generate Matrix", type="primary", use_container_width=True)
+        with st.expander("➕ Generate New Matrix", expanded=True if not st.session_state["pivot_results"] else False):
+            with st.form("pivot_form"):
+                p_col1, p_col2, p_col3 = st.columns(3)
+                with p_col1: pivot_index = st.selectbox("Index (Rows)", ["None"] + all_cols)
+                with p_col2: pivot_values = st.selectbox("Target Value", ["None"] + numeric_cols)
+                with p_col3: pivot_agg = st.selectbox("Aggregation", ["mean", "sum", "count", "max", "min"])
+                
+                pivot_name = st.text_input("Matrix Identifier", value=f"Analysis Matrix {len(st.session_state['pivot_results']) + 1}")
+                create_pivot = st.form_submit_button("Generate Matrix", type="primary", use_container_width=True)
 
-        if create_pivot and pivot_index != "None" and pivot_values != "None":
-            try:
-                pivot_df = pd.pivot_table(df, index=pivot_index, values=pivot_values, aggfunc=pivot_agg).reset_index()
-                st.session_state["pivot_results"].append({
-                    "name": pivot_name, "df": pivot_df, "index": pivot_index, "value": pivot_values, "agg": pivot_agg
-                })
-                st.success(f"Matrix '{pivot_name}' computed.")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Computation failed: {e}")
+            if create_pivot and pivot_index != "None" and pivot_values != "None":
+                try:
+                    pivot_df = pd.pivot_table(df, index=pivot_index, values=pivot_values, aggfunc=pivot_agg).reset_index()
+                    st.session_state["pivot_results"].append({
+                        "name": pivot_name, "df": pivot_df, "index": pivot_index, "value": pivot_values, "agg": pivot_agg
+                    })
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Computation failed: {e}")
         
         if st.session_state["pivot_results"]:
-            st.markdown(f"### 📋 Computed Matrices ({len(st.session_state['pivot_results'])})")
+            st.markdown("### Computed Matrices")
             pivot_names = [p["name"] for p in st.session_state["pivot_results"]]
             pivot_tabs = st.tabs(pivot_names)
             
@@ -424,18 +344,20 @@ if "df" in st.session_state:
                 with tab:
                     p_data = st.session_state["pivot_results"][i]
                     pdf = p_data["df"]
-                    st.caption(f"**{p_data['agg'].upper()}** of **{p_data['value']}** by **{p_data['index']}**")
-                    st.dataframe(pdf, use_container_width=True)
                     
-                    try:
-                        fig = px.bar(pdf, x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
-                        fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-                        st.plotly_chart(fig, use_container_width=True)
-                    except: pass
-                    
-                    if st.button(f"🗑️ Delete {p_data['name']}", key=f"del_{i}"):
-                        st.session_state["pivot_results"].pop(i)
-                        st.rerun()
+                    with st.container(border=True):
+                        st.caption(f"**{p_data['agg'].upper()}** of **{p_data['value']}** by **{p_data['index']}**")
+                        st.dataframe(pdf, use_container_width=True)
+                        
+                        try:
+                            fig = px.bar(pdf, x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
+                            fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=20, b=20, l=0, r=0))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except: pass
+                        
+                        if st.button(f"🗑️ Delete {p_data['name']}", key=f"del_{i}"):
+                            st.session_state["pivot_results"].pop(i)
+                            st.rerun()
 
     with tab4:
         df = st.session_state["df"]
@@ -443,89 +365,86 @@ if "df" in st.session_state:
         all_cols = df.columns.tolist()
         chart_theme = dict(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font_family="Outfit", margin=dict(t=40, b=40, l=0, r=0))
 
-        chart_type = st.selectbox("Visualization Engine", ["Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram", "Automated Dashboard"])
-        st.markdown("---")
+        with st.container(border=True):
+            chart_type = st.selectbox("Visualization Engine", ["Automated Dashboard", "Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "Histogram"])
+            
+            try:
+                if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
+                    c1, c2, c3 = st.columns(3)
+                    with c1: x_axis = st.selectbox("X-Axis (Dimension)", all_cols)
+                    with c2: y_axis = st.selectbox("Y-Axis (Measure)", numeric_cols)
+                    with c3: color_col = st.selectbox("Color Segment", ["None"] + all_cols)
+                    
+                    color_param = None if color_col == "None" else color_col
+                    
+                    if chart_type == "Bar Chart": 
+                        fig = px.bar(df, x=x_axis, y=y_axis, color=color_param)
+                    elif chart_type == "Line Chart": 
+                        fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
+                    elif chart_type == "Scatter Plot": 
+                        fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
+                    
+                    fig.update_layout(**chart_theme)
+                    st.plotly_chart(fig, use_container_width=True)
 
-        try:
-            if chart_type in ["Bar Chart", "Line Chart", "Scatter Plot"]:
-                c1, c2, c3 = st.columns(3)
-                with c1: x_axis = st.selectbox("X-Axis (Dimension)", all_cols)
-                with c2: y_axis = st.selectbox("Y-Axis (Measure)", numeric_cols)
-                with c3: color_col = st.selectbox("Color Segment", ["None"] + all_cols)
-                
-                color_param = None if color_col == "None" else color_col
-                
-                if chart_type == "Bar Chart": 
-                    fig = px.bar(df, x=x_axis, y=y_axis, color=color_param)
-                elif chart_type == "Line Chart": 
-                    fig = px.line(df, x=x_axis, y=y_axis, color=color_param, markers=True)
-                elif chart_type == "Scatter Plot": 
-                    fig = px.scatter(df, x=x_axis, y=y_axis, color=color_param)
-                
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
+                elif chart_type == "Pie Chart":
+                    c1, c2 = st.columns(2)
+                    with c1: names = st.selectbox("Categories", all_cols)
+                    with c2: values = st.selectbox("Values", numeric_cols)
+                    fig = px.pie(df, names=names, values=values, hole=0.4)
+                    fig.update_layout(**chart_theme)
+                    st.plotly_chart(fig, use_container_width=True)
 
-            elif chart_type == "Pie Chart":
-                c1, c2 = st.columns(2)
-                with c1: names = st.selectbox("Categories", all_cols)
-                with c2: values = st.selectbox("Values", numeric_cols)
-                fig = px.pie(df, names=names, values=values, hole=0.4)
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
+                elif chart_type == "Automated Dashboard":
+                    if len(numeric_cols) >= 1 and len(all_cols) >= 2:
+                        d_col1, d_col2 = st.columns(2)
+                        with d_col1:
+                            fig1 = px.histogram(df, x=numeric_cols[0], title=f"Density: {numeric_cols[0]}", color_discrete_sequence=["#3B82F6"])
+                            fig1.update_layout(**chart_theme)
+                            st.plotly_chart(fig1, use_container_width=True)
+                            fig2 = px.pie(df, names=all_cols[0], title=f"Segments: {all_cols[0]}", hole=0.3)
+                            fig2.update_layout(**chart_theme)
+                            st.plotly_chart(fig2, use_container_width=True)
+                        with d_col2:
+                            fig3 = px.box(df, y=numeric_cols[0], title=f"Variance: {numeric_cols[0]}", color_discrete_sequence=["#8B5CF6"])
+                            fig3.update_layout(**chart_theme)
+                            st.plotly_chart(fig3, use_container_width=True)
+                            if len(numeric_cols) >= 2:
+                                fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"Correlation: {numeric_cols[0]} v {numeric_cols[1]}")
+                                fig4.update_layout(**chart_theme)
+                                st.plotly_chart(fig4, use_container_width=True)
 
-            elif chart_type == "Automated Dashboard":
-                if len(numeric_cols) >= 1 and len(all_cols) >= 2:
-                    d_col1, d_col2 = st.columns(2)
-                    with d_col1:
-                        fig1 = px.histogram(df, x=numeric_cols[0], title=f"Density: {numeric_cols[0]}", color_discrete_sequence=["#3B82F6"])
-                        fig1.update_layout(**chart_theme)
-                        st.plotly_chart(fig1, use_container_width=True)
-                        fig2 = px.pie(df, names=all_cols[0], title=f"Segments: {all_cols[0]}", hole=0.3)
-                        fig2.update_layout(**chart_theme)
-                        st.plotly_chart(fig2, use_container_width=True)
-                    with d_col2:
-                        fig3 = px.box(df, y=numeric_cols[0], title=f"Variance: {numeric_cols[0]}", color_discrete_sequence=["#8B5CF6"])
-                        fig3.update_layout(**chart_theme)
-                        st.plotly_chart(fig3, use_container_width=True)
-                        if len(numeric_cols) >= 2:
-                            fig4 = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1], title=f"Correlation: {numeric_cols[0]} v {numeric_cols[1]}")
-                            fig4.update_layout(**chart_theme)
-                            st.plotly_chart(fig4, use_container_width=True)
+                elif chart_type == "Histogram":
+                    target_col = st.selectbox("Target Metric", numeric_cols)
+                    fig = px.histogram(df, x=target_col, color_discrete_sequence=["#3B82F6"])
+                    fig.update_layout(**chart_theme)
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    st.markdown("#### Metric Summary")
+                    h_col1, h_col2, h_col3 = st.columns(3)
+                    h_col1.metric("Mean", f"{df[target_col].mean():.2f}")
+                    h_col2.metric("Median", f"{df[target_col].median():.2f}")
+                    h_col3.metric("Max", f"{df[target_col].max():.2f}")
 
-            elif chart_type == "Histogram":
-                target_col = st.selectbox("Target Metric", numeric_cols)
-                fig = px.histogram(df, x=target_col, color_discrete_sequence=["#3B82F6"])
-                fig.update_layout(**chart_theme)
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.markdown("#### Metric Summary")
-                h_col1, h_col2, h_col3 = st.columns(3)
-                h_col1.metric("Mean", f"{df[target_col].mean():.2f}")
-                h_col2.metric("Median", f"{df[target_col].median():.2f}")
-                h_col3.metric("Max", f"{df[target_col].max():.2f}")
-
-        except Exception as e:
-            st.error(f"Visualization rendering failed. Check dimension compatibility.")
+            except Exception as e:
+                st.error("Visualization rendering failed. Check dimension compatibility.")
 
     with tab5:
         df = st.session_state["df"]
-        st.markdown("### 💾 Export Engine")
-        m1, m2 = st.columns(2)
-        m1.metric("Final Matrix Rows", f"{df.shape[0]:,}")
-        m2.metric("Final Matrix Columns", df.shape[1])
-
-        e1, e2 = st.columns(2)
-        with e1:
-            st.download_button("Download CSV Payload", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_payload.csv", mime="text/csv", use_container_width=True)
-        with e2:
-            buffer = io.BytesIO()
-            df.to_excel(buffer, index=False, engine="openpyxl")
-            st.download_button("Download Excel Payload", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        with st.container(border=True):
+            st.markdown("### Export Payload")
+            m1, m2 = st.columns(2)
+            m1.metric("Final Matrix Rows", f"{df.shape[0]:,}")
+            m2.metric("Final Matrix Columns", df.shape[1])
+            
+            st.write("")
+            e1, e2 = st.columns(2)
+            with e1:
+                st.download_button("Download CSV", df.to_csv(index=False).encode("utf-8"), file_name="insightiq_payload.csv", mime="text/csv", use_container_width=True)
+            with e2:
+                buffer = io.BytesIO()
+                df.to_excel(buffer, index=False, engine="openpyxl")
+                st.download_button("Download Excel", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
 else:
-    st.markdown("""
-    <div class="empty-state">
-        <h3>System Ready</h3>
-        <p style="color: var(--text-muted);">Access the Engine Control panel to upload your data formats.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.empty()
