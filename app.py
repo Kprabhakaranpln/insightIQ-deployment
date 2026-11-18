@@ -148,48 +148,6 @@ header[data-testid="stHeader"] {
 
 SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "json", "jsonl", "xml", "parquet", "avro"]
 
-if "df" not in st.session_state:
-    st.markdown("""
-    <div class="hero-minimal">
-        <h1>Data Refinery, Reimagined.</h1>
-        <p class="subtitle">Upload raw datasets and extract visual insights instantly on any device.</p>
-    </div>
-    <div class="feature-grid">
-        <div class="feature-item">
-            <span class="icon">⚡</span>
-            <div>
-                <div class="label">Universal Import</div>
-                <p class="desc">Supports 8 data formats</p>
-            </div>
-        </div>
-        <div class="feature-item">
-            <span class="icon">🧬</span>
-            <div>
-                <div class="label">Smart Cleaning</div>
-                <p class="desc">Handle anomalies instantly</p>
-            </div>
-        </div>
-        <div class="feature-item">
-            <span class="icon">🔮</span>
-            <div>
-                <div class="label">Visual Analytics</div>
-                <p class="desc">Interactive dashboard views</p>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown(
-        f"""
-        <div style="text-align:center; margin: 20px 0;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; margin-right: 8px; box-shadow: 0 0 8px #3B82F6;"></span>
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); font-weight: 500;">Engine Online · {len(SUPPORTED_FORMATS)} Formats Supported</span>
-        </div>
-        <hr style="border:none; border-top: 1px solid var(--border-light); margin-bottom: 30px;">
-        """,
-        unsafe_allow_html=True,
-    )
-
 def load_dataset(uploaded_file):
     name = uploaded_file.name.lower()
     uploaded_file.seek(0)
@@ -227,14 +185,26 @@ with st.sidebar:
     st.write("")
     uploaded_files = st.file_uploader("Drop datasets here", type=SUPPORTED_FORMATS, accept_multiple_files=True)
 
-    if uploaded_files:
-        if "datasets" not in st.session_state: st.session_state["datasets"] = {}
-        for f in uploaded_files:
-            if f.name not in st.session_state["datasets"]:
-                loaded = load_dataset(f)
-                if loaded is not None: st.session_state["datasets"][f.name] = loaded
+    if not uploaded_files:
+        for key in ["datasets", "active_name", "df", "df_history", "history_index", "pivot_results"]:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.caption("Awaiting data ingestion...")
+    else:
+        current_files = {f.name: f for f in uploaded_files}
+        
+        if "datasets" in st.session_state:
+            st.session_state["datasets"] = {k: v for k, v in st.session_state["datasets"].items() if k in current_files}
+        else:
+            st.session_state["datasets"] = {}
+            
+        for fname, fobj in current_files.items():
+            if fname not in st.session_state["datasets"]:
+                loaded = load_dataset(fobj)
+                if loaded is not None:
+                    st.session_state["datasets"][fname] = loaded
 
-        if st.session_state.get("datasets"):
+        if st.session_state["datasets"]:
             active_name = st.selectbox("Active Pipeline", list(st.session_state["datasets"].keys()))
             if st.session_state.get("active_name") != active_name or "df_history" not in st.session_state:
                 st.session_state["active_name"] = active_name
@@ -242,14 +212,17 @@ with st.sidebar:
                 st.session_state["df_history"] = [initial_df]
                 st.session_state["history_index"] = 0
                 st.session_state["df"] = initial_df.copy()
+                st.session_state["pivot_results"] = []
             
             df_active = st.session_state["df"]
             st.markdown("---")
             c1, c2 = st.columns(2)
             c1.metric("Rows", f"{df_active.shape[0]:,}")
             c2.metric("Columns", df_active.shape[1])
-    else:
-        st.caption("Awaiting data ingestion...")
+        else:
+            for key in ["active_name", "df", "df_history", "history_index", "pivot_results"]:
+                if key in st.session_state:
+                    del st.session_state[key]
 
 if "df" in st.session_state:
     with st.container(border=True):
@@ -562,7 +535,46 @@ if "df" in st.session_state:
             st.info("No matrices generated yet. Go to '🔀 Pivot Analysis' to create some.")
 
 else:
-    st.empty()
+    st.markdown("""
+    <div class="hero-minimal">
+        <h1>Data Refinery, Reimagined.</h1>
+        <p class="subtitle">Upload raw datasets and extract visual insights instantly on any device.</p>
+    </div>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <span class="icon">⚡</span>
+            <div>
+                <div class="label">Universal Import</div>
+                <p class="desc">Supports 8 data formats</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <span class="icon">🧬</span>
+            <div>
+                <div class="label">Smart Cleaning</div>
+                <p class="desc">Handle anomalies instantly</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <span class="icon">🔮</span>
+            <div>
+                <div class="label">Visual Analytics</div>
+                <p class="desc">Interactive dashboard views</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(
+        f"""
+        <div style="text-align:center; margin: 20px 0;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3B82F6; margin-right: 8px; box-shadow: 0 0 8px #3B82F6;"></span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); font-weight: 500;">Engine Online · {len(SUPPORTED_FORMATS)} Formats Supported</span>
+        </div>
+        <hr style="border:none; border-top: 1px solid var(--border-light); margin-bottom: 30px;">
+        """,
+        unsafe_allow_html=True,
+    )
 '''
 
 bot_code = r'''import os
