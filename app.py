@@ -1,4 +1,8 @@
-import io
+import os
+
+os.makedirs(".github/workflows", exist_ok=True)
+
+app_code = r'''import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -268,12 +272,13 @@ if "df" in st.session_state:
     with st.expander("👁️ View Live Dataset Preview", expanded=False):
         st.dataframe(st.session_state["df"].head(100), use_container_width=True)
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🧬 Data Cleaning", 
         "⚙️ Transform", 
         "🔀 Pivot Analysis", 
         "📈 Dashboard", 
-        "💾 Export"
+        "💾 Export",
+        "📑 Matrix Report"
     ])
 
     with tab1:
@@ -510,5 +515,123 @@ if "df" in st.session_state:
                 df.to_excel(buffer, index=False, engine="openpyxl")
                 st.download_button("Download Excel File", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
+    with tab6:
+        st.markdown("### Combined Matrix Report")
+        if "pivot_results" in st.session_state and st.session_state["pivot_results"]:
+            for p_data in st.session_state["pivot_results"]:
+                with st.container(border=True):
+                    val_label = p_data.get("original_value", p_data["value"])
+                    st.markdown(f"#### {p_data['name']}")
+                    st.caption(f"**{p_data['agg'].upper()}** of **{val_label}** by **{p_data['index']}**")
+                    
+                    colA, colB = st.columns(2)
+                    with colA:
+                        st.dataframe(p_data["df"], use_container_width=True)
+                    with colB:
+                        try:
+                            fig = px.bar(p_data["df"], x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
+                            fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=20, b=20, l=0, r=0))
+                            st.plotly_chart(fig, use_container_width=True)
+                        except: 
+                            st.warning("Chart render failed.")
+            
+            st.markdown("---")
+            st.markdown("#### Download Comprehensive Report")
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                st.session_state["df"].to_excel(writer, sheet_name="Master Data", index=False)
+                for p_data in st.session_state["pivot_results"]:
+                    sheet_name = p_data["name"][:31].replace(":", "").replace("/", "")
+                    p_data["df"].to_excel(writer, sheet_name=sheet_name, index=False)
+            
+            st.download_button(
+                "📥 Download Complete Report (Excel)", 
+                buffer.getvalue(), 
+                file_name="InsightIQ_Complete_Report.xlsx", 
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                type="primary"
+            )
+        else:
+            st.info("No matrices generated yet. Go to '🔀 Pivot Analysis' to create some.")
+
 else:
     st.empty()
+'''
+
+bot_code = r'''import os
+from playwright.sync_api import sync_playwright, TimeoutError
+
+TARGET_URL = os.getenv("APP_URL", "https://your-app-name.streamlit.app/")
+
+def run(playwright):
+    browser = playwright.chromium.launch(headless=True)
+    page = browser.new_page()
+    
+    try:
+        page.goto(TARGET_URL, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(15000) 
+    except TimeoutError:
+        pass
+    except Exception:
+        pass
+    finally:
+        browser.close()
+
+if __name__ == "__main__":
+    with sync_playwright() as p:
+        run(p)
+'''
+
+req_code = r'''streamlit
+pandas
+plotly
+openpyxl
+fastavro
+xlrd
+playwright
+'''
+
+yaml_code = r'''name: Keep Streamlit Awake
+
+on:
+  schedule:
+    - cron: '0 */10 * * *'
+  workflow_dispatch: 
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Playwright & OS Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
+          sudo npx playwright install-deps chromium
+          
+      - name: Run the bot
+        env:
+          APP_URL: "https://your-app-name.streamlit.app/" 
+        run: python keep_awake.py
+'''
+
+with open("app.py", "w", encoding="utf-8") as f:
+    f.write(app_code)
+
+with open("keep_awake.py", "w", encoding="utf-8") as f:
+    f.write(bot_code)
+
+with open("requirements.txt", "w", encoding="utf-8") as f:
+    f.write(req_code)
+
+with open(".github/workflows/keep_awake.yml", "w", encoding="utf-8") as f:
+    f.write(yaml_code)
