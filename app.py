@@ -278,7 +278,7 @@ if "df" in st.session_state:
         "🔀 Pivot Analysis", 
         "📈 Dashboard", 
         "💾 Export",
-        "📑 Matrix Report"
+        "📊 Matrix Dashboard"
     ])
 
     with tab1:
@@ -516,27 +516,33 @@ if "df" in st.session_state:
                 st.download_button("Download Excel File", buffer.getvalue(), file_name="insightiq_payload.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
     with tab6:
-        st.markdown("### Combined Matrix Report")
+        st.markdown("### 📊 Consolidated Matrix Dashboard")
         if "pivot_results" in st.session_state and st.session_state["pivot_results"]:
-            for p_data in st.session_state["pivot_results"]:
-                with st.container(border=True):
-                    val_label = p_data.get("original_value", p_data["value"])
-                    st.markdown(f"#### {p_data['name']}")
-                    st.caption(f"**{p_data['agg'].upper()}** of **{val_label}** by **{p_data['index']}**")
-                    
-                    colA, colB = st.columns(2)
-                    with colA:
-                        st.dataframe(p_data["df"], use_container_width=True)
-                    with colB:
-                        try:
-                            fig = px.bar(p_data["df"], x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
-                            fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=20, b=20, l=0, r=0))
-                            st.plotly_chart(fig, use_container_width=True)
-                        except: 
-                            st.warning("Chart render failed.")
+            matrices = st.session_state["pivot_results"]
+            
+            for i in range(0, len(matrices), 2):
+                cols = st.columns(2)
+                for j in range(2):
+                    if i + j < len(matrices):
+                        p_data = matrices[i + j]
+                        with cols[j]:
+                            with st.container(border=True):
+                                val_label = p_data.get("original_value", p_data["value"])
+                                st.markdown(f"#### {p_data['name']}")
+                                st.caption(f"**{p_data['agg'].upper()}** of **{val_label}** by **{p_data['index']}**")
+                                
+                                try:
+                                    fig = px.bar(p_data["df"], x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
+                                    fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=10, b=10, l=0, r=0), height=300)
+                                    st.plotly_chart(fig, use_container_width=True)
+                                except: 
+                                    st.warning("Chart render failed.")
+                                
+                                with st.expander("👁️ View Data Matrix"):
+                                    st.dataframe(p_data["df"], use_container_width=True)
             
             st.markdown("---")
-            st.markdown("#### Download Comprehensive Report")
+            st.markdown("#### Export Comprehensive Report")
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                 st.session_state["df"].to_excel(writer, sheet_name="Master Data", index=False)
