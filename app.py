@@ -384,28 +384,52 @@ if "df" in st.session_state:
 
             if create_pivot and pivot_index != "None" and pivot_values != "None":
                 try:
-                    pivot_df = pd.pivot_table(df, index=pivot_index, values=pivot_values, aggfunc=pivot_agg).reset_index()
-                    st.session_state["pivot_results"].append({"name": pivot_name, "df": pivot_df, "index": pivot_index, "value": pivot_values, "agg": pivot_agg})
+                    agg_col_name = f"{pivot_values}_{pivot_agg}"
+                    pivot_series = df.groupby(pivot_index)[pivot_values].agg(pivot_agg)
+                    pivot_df = pivot_series.reset_index(name=agg_col_name)
+                    
+                    st.session_state["pivot_results"].append({
+                        "name": pivot_name, 
+                        "df": pivot_df, 
+                        "index": pivot_index, 
+                        "value": agg_col_name,
+                        "original_value": pivot_values, 
+                        "agg": pivot_agg
+                    })
                     st.rerun()
-                except:
-                    pass
+                except Exception as e:
+                    st.error(f"Error generating matrix: {str(e)}")
         
         if st.session_state["pivot_results"]:
             st.markdown("### Computed Matrices")
             pivot_names = [p["name"] for p in st.session_state["pivot_results"]]
-            pivot_tabs = st.tabs(pivot_names)
+            
+            seen = {}
+            unique_names = []
+            for name in pivot_names:
+                if name in seen:
+                    seen[name] += 1
+                    unique_names.append(f"{name} ({seen[name]})")
+                else:
+                    seen[name] = 0
+                    unique_names.append(name)
+                    
+            pivot_tabs = st.tabs(unique_names)
             for i, tab in enumerate(pivot_tabs):
                 with tab:
                     p_data = st.session_state["pivot_results"][i]
                     pdf = p_data["df"]
                     with st.container(border=True):
-                        st.caption(f"**{p_data['agg'].upper()}** of **{p_data['value']}** by **{p_data['index']}**")
+                        val_label = p_data.get("original_value", p_data["value"])
+                        st.caption(f"**{p_data['agg'].upper()}** of **{val_label}** by **{p_data['index']}**")
                         st.dataframe(pdf, use_container_width=True)
                         try:
                             fig = px.bar(pdf, x=p_data["index"], y=p_data["value"], color=p_data["value"], color_continuous_scale="Blues")
                             fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", margin=dict(t=20, b=20, l=0, r=0))
                             st.plotly_chart(fig, use_container_width=True)
-                        except: pass
+                        except Exception as plot_err: 
+                            st.warning(f"Could not render chart: {plot_err}")
+                            
                         if st.button(f"🗑️ Delete Matrix", key=f"del_{i}", use_container_width=True):
                             st.session_state["pivot_results"].pop(i)
                             st.rerun()
@@ -494,23 +518,28 @@ else:
     st.empty()
 '''
 
-bot_code = r'''import datetime
-from playwright.sync_api import sync_playwright
+bot_code = r'''import os
+from playwright.sync_api import sync_playwright, TimeoutError
+
+TARGET_URL = os.getenv("APP_URL", "https://your-app-name.streamlit.app/")
 
 def run(playwright):
     browser = playwright.chromium.launch(headless=True)
     page = browser.new_page()
-    target_url = "https://your-app-name.streamlit.app/"
+    
     try:
-        page.goto(target_url, wait_until="networkidle") 
+        page.goto(TARGET_URL, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(15000) 
-    except Exception as e:
+    except TimeoutError:
+        pass
+    except Exception:
         pass
     finally:
         browser.close()
 
-with sync_playwright() as p:
-    run(p)
+if __name__ == "__main__":
+    with sync_playwright() as p:
+        run(p)
 '''
 
 req_code = r'''streamlit
@@ -541,13 +570,16 @@ jobs:
         with:
           python-version: '3.11'
           
-      - name: Install Playwright
+      - name: Install Playwright & OS Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install playwright
           playwright install chromium
+          sudo npx playwright install-deps chromium
           
       - name: Run the bot
+        env:
+          APP_URL: "https://your-app-name.streamlit.app/" 
         run: python keep_awake.py
 '''
 
